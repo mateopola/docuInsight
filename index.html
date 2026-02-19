@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DocuInsight - Banco Falabella</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+
+<body>
+    <div class="app-container">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar" id="sidebar">
+            <div class="brand">
+                <div class="brand-content">
+                    <img src="Logotipo_Banco_Falabella.svg.png" alt="Banco Falabella" class="brand-logo">
+                </div>
+                <button id="sidebar-toggle" class="sidebar-toggle-btn" title="Alternar menú">
+                    <!-- Hamburger / Close Icon (SVG) -->
+                    <svg class="toggle-icon-svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2">
+                        <path d="M3 12h18M3 6h18M3 18h18" stroke-linecap="round" stroke-linejoin="round" />
+                    </svg>
+                </button>
+            </div>
+
+            <nav class="nav-menu">
+                <button class="nav-item active" data-view="metrics-view" title="Tablero de Control">
+                    <span class="icon">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="3" y="3" width="7" height="7"></rect>
+                            <rect x="14" y="3" width="7" height="7"></rect>
+                            <rect x="14" y="14" width="7" height="7"></rect>
+                            <rect x="3" y="14" width="7" height="7"></rect>
+                        </svg>
+                    </span>
+                    <span class="nav-text">Tablero de Control</span>
+                </button>
+                <button class="nav-item" data-view="upload-view" title="Cargar Documento">
+                    <span class="icon">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                            <polyline points="17 8 12 3 7 8"></polyline>
+                            <line x1="12" y1="3" x2="12" y2="15"></line>
+                        </svg>
+                    </span>
+                    <span class="nav-text">Cargar Documento</span>
+                </button>
+                <button class="nav-item" data-view="dashboard-view" title="Resultados Actuales">
+                    <span class="icon">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="18" y1="20" x2="18" y2="10"></line>
+                            <line x1="12" y1="20" x2="12" y2="4"></line>
+                            <line x1="6" y1="20" x2="6" y2="14"></line>
+                        </svg>
+                    </span>
+                    <span class="nav-text">Resultados Actuales</span>
+                </button>
+                <button class="nav-item" data-view="admin-view" title="Administración">
+                    <span class="icon">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="3"></circle>
+                            <path
+                                d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z">
+                            </path>
+                        </svg>
+                    </span>
+                    <span class="nav-text">Administración</span>
+                </button>
+            </nav>
+
+            <div class="user-profile">
+                <div class="avatar">AD</div>
+                <div class="info">
+                    <span class="name">Admin User</span>
+                    <span class="role">Gestor Documental</span>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="main-content">
+            <header class="top-bar">
+                <div class="header-branding">
+                    <span class="app-title-main">DocuInsight</span>
+                </div>
+                <div class="system-status">
+                    <span class="status-dot online"></span> Sistema Activo
+                </div>
+            </header>
+
+            <div id="content-area">
+                <!-- Views will be injected here via JS -->
+
+                <!-- View: METRICS (KPIs) -->
+                <div id="metrics-view" class="view-section active">
+                    <div class="kpi-grid">
+                        <div class="kpi-card">
+                            <div class="kpi-icon"
+                                style="background:rgba(59, 147, 38, 0.1); color:var(--primary-color);">📑</div>
+                            <div class="kpi-info">
+                                <span class="kpi-label">Documentos Procesados</span>
+                                <span class="kpi-value" id="kpi-total-docs">1,248</span>
+                                <span class="kpi-trend up">▲ 12% este mes</span>
+                            </div>
+                        </div>
+                        <div class="kpi-card">
+                            <div class="kpi-icon" style="background:rgba(33, 150, 243, 0.1); color:#2196F3;">🎯</div>
+                            <div class="kpi-info">
+                                <span class="kpi-label">Precisión Promedio</span>
+                                <span class="kpi-value" id="kpi-accuracy">96.5%</span>
+                                <span class="kpi-trend up">▲ 1.2% vs objetivo</span>
+                            </div>
+                        </div>
+                        <div class="kpi-card">
+                            <div class="kpi-icon" style="background:rgba(255, 152, 0, 0.1); color:#FF9800;">⏱️</div>
+                            <div class="kpi-info">
+                                <span class="kpi-label">Tiempo Promedio</span>
+                                <span class="kpi-value">1.8s</span>
+                                <span class="kpi-trend down">▼ 0.2s optimizado</span>
+                            </div>
+                        </div>
+                        <div class="kpi-card">
+                            <div class="kpi-icon" style="background:rgba(156, 39, 176, 0.1); color:#9C27B0;">🤖</div>
+                            <div class="kpi-info">
+                                <span class="kpi-label">Consumo de Tokens</span>
+                                <span class="kpi-value">845k</span>
+                                <span class="kpi-trend">Tokens acumulados</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="charts-grid">
+                        <div class="card chart-card">
+                            <h3>Distribución por Tipología</h3>
+                            <div class="chart-placeholder">
+                                <!-- Simulated Bar Chart -->
+                                <div class="bar-chart">
+                                    <div class="bar-group">
+                                        <div class="bar-label">RUT</div>
+                                        <div class="bar-fill" style="width: 45%;"></div>
+                                        <div class="bar-value">45%</div>
+                                    </div>
+                                    <div class="bar-group">
+                                        <div class="bar-label">Cámaras</div>
+                                        <div class="bar-fill" style="width: 30%;"></div>
+                                        <div class="bar-value">30%</div>
+                                    </div>
+                                    <div class="bar-group">
+                                        <div class="bar-label">Cédulas</div>
+                                        <div class="bar-fill" style="width: 25%;"></div>
+                                        <div class="bar-value">25%</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card chart-card">
+                            <h3>Documentos Procesados por Mes</h3>
+                            <div class="chart-placeholder">
+                                <!-- Simulated Vertical Bar Chart (Histogram style) -->
+                                <div class="column-chart">
+                                    <div class="col-group">
+                                        <div class="col-fill" style="height: 40%;" data-tooltip="145 Docs"></div>
+                                        <div class="col-label">Ene</div>
+                                    </div>
+                                    <div class="col-group">
+                                        <div class="col-fill" style="height: 55%;" data-tooltip="198 Docs"></div>
+                                        <div class="col-label">Feb</div>
+                                    </div>
+                                    <div class="col-group">
+                                        <div class="col-fill" style="height: 35%;" data-tooltip="126 Docs"></div>
+                                        <div class="col-label">Mar</div>
+                                    </div>
+                                    <div class="col-group">
+                                        <div class="col-fill" style="height: 70%;" data-tooltip="254 Docs"></div>
+                                        <div class="col-label">Abr</div>
+                                    </div>
+                                    <div class="col-group">
+                                        <div class="col-fill" style="height: 60%;" data-tooltip="210 Docs"></div>
+                                        <div class="col-label">May</div>
+                                    </div>
+                                    <div class="col-group">
+                                        <div class="col-fill" style="height: 85%;" data-tooltip="315 Docs"></div>
+                                        <div class="col-label">Jun</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- View: UPLOAD -->
+                <div id="upload-view" class="view-section hidden">
+                    <div class="upload-container">
+                        <!-- State 1: Drop Zone -->
+                        <div class="drop-zone" id="drop-zone">
+                            <span class="upload-icon">☁️</span>
+                            <h3>Arrastra y suelta documentos aquí</h3>
+                            <p>Soporta PDF, PNG, JPG (Máx 20MB)</p>
+                            <button class="btn btn-primary" id="select-file-btn">Seleccionar Archivo</button>
+                            <input type="file" id="file-input" hidden accept=".pdf,.png,.jpg,.jpeg">
+                        </div>
+
+                        <!-- State 2: Preview & Confirm -->
+                        <div id="upload-preview-state" class="preview-confirm-container hidden">
+                            <div class="preview-actions-header">
+                                <h3>Vista Previa del Documento</h3>
+                                <div class="action-buttons">
+                                    <button class="btn btn-secondary" id="cancel-upload-btn"
+                                        style="color: var(--danger-color); border-color: var(--danger-color);">Eliminar
+                                        Documento</button>
+                                    <button class="btn btn-primary" id="process-upload-btn">✨ Procesar con IA</button>
+                                </div>
+                            </div>
+                            <div id="intake-preview-frame" class="intake-preview-frame">
+                                <!-- Preview Injected Here -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- View: DASHBOARD (Hidden by default) -->
+                <div id="dashboard-view" class="view-section hidden">
+                    <div class="results-grid">
+                        <div class="preview-panel card">
+                            <h3>Documento Original</h3>
+                            <div id="doc-preview-container" class="document-preview-placeholder">
+                                <p>No hay documento seleccionado</p>
+                            </div>
+                        </div>
+                        <div class="extraction-panel card">
+                            <div class="panel-header">
+                                <h3>Datos Extraídos</h3>
+                                <span class="badge" id="doc-type-badge">Sin Clasificar</span>
+                            </div>
+                            <div id="extraction-results" class="results-container">
+                                <p class="empty-state">Procese un documento para ver resultados.</p>
+                            </div>
+                            <div class="confidence-meter">
+                                <span>Confianza del Modelo:</span>
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: 0%"></div>
+                                </div>
+                                <span class="score-text">0%</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- View: ADMIN (Governance) -->
+                <div id="admin-view" class="view-section hidden">
+                    <!-- Panel: Configuration (Main List) -->
+                    <div id="admin-main-panel" class="admin-panel active">
+                        <div class="admin-controls">
+                            <button class="btn btn-primary" id="add-doctype-btn">
+                                + Nuevo Tipo Documental
+                            </button>
+                        </div>
+                        <div class="card">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th style="width:100px;">ID</th>
+                                        <th>Nombre del Documento</th>
+                                        <th>Descripción</th>
+                                        <th style="width:160px;">Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="doctypes-table-body">
+                                    <!-- Populated by JS -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Panel: Training (Hidden Sub-view) -->
+                    <div id="admin-training-panel" class="admin-panel hidden">
+                        <div class="training-container">
+                            <div class="card training-card">
+                                <div
+                                    style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
+                                    <h3>Entrenar Nuevo Modelo</h3>
+                                    <button class="btn btn-secondary" id="cancel-training-btn">← Volver a la
+                                        Lista</button>
+                                </div>
+                                <p class="text-light">Sube ejemplos para enseñar al sistema a reconocer nuevos
+                                    documentos.</p>
+
+                                <div class="form-group" style="margin: 1.5rem 0;">
+                                    <label class="field-label">Nombre del Nuevo Tipo</label>
+                                    <input type="text" id="train-model-name" class="prompt-input"
+                                        placeholder="Ej: Pagaré, Historia Clínica...">
+                                </div>
+
+                                <div class="drop-zone mini-dropzone" id="train-dropzone">
+                                    <span style="font-size: 2rem;">📂</span>
+                                    <p>Arrastra +50 ejemplos aquí</p>
+                                </div>
+
+                                <div id="training-progress-area" class="hidden">
+                                    <div class="terminal-log" id="training-log">
+                                        > Inicializando entorno de entrenamiento...<br>
+                                    </div>
+                                    <div class="progress-bar">
+                                        <div class="progress-fill" id="training-progress-fill" style="width: 0%"></div>
+                                    </div>
+                                    <p class="text-center helper-text" id="training-status-text">Esperando inicio...</p>
+                                </div>
+
+                                <div style="text-align: right; margin-top: 1.5rem;">
+                                    <button class="btn btn-primary" id="start-training-btn">Iniciar Entrenamiento
+                                        (GPU)</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </main>
+    </div>
+
+    <!-- Configuration Modal -->
+    <div id="config-modal" class="overlay hidden">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3 id="modal-title">Configurar Documento</h3>
+                <button class="close-btn" id="close-modal-btn">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p class="modal-desc">Selecciona los campos que deseas extraer para este tipo documental.</p>
+
+                <div style="display: flex; gap: 0.5rem; margin-bottom: 1rem;">
+                    <input type="text" id="new-field-input" class="prompt-input"
+                        placeholder="Nombre del campo (ej: Retención)..." style="margin-bottom: 0;">
+                    <button id="add-field-btn" class="btn btn-secondary" style="white-space: nowrap;">+ Agregar</button>
+                </div>
+
+                <div class="fields-list" id="modal-fields-list">
+                    <!-- Checkboxes injected via JS -->
+                </div>
+
+                <div class="prompt-section">
+                    <h4>Prompt del Sistema (Edición No-Code)</h4>
+                    <textarea class="prompt-input"
+                        rows="4">Analiza este documento y extrae las entidades seleccionadas arriba. Devuelve formato JSON estricto.</textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" id="cancel-modal-btn">Cancelar</button>
+                <button class="btn btn-primary" id="save-modal-btn">Guardar Cambios</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Add New DocType (New) -->
+    <div id="add-doctype-modal" class="overlay hidden">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3>Nuevo Tipo Documental</h3>
+                <button class="close-btn" id="close-add-modal-btn">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="field-label">ID Sistema (Slug)</label>
+                    <input type="text" id="new-doc-id" class="prompt-input" placeholder="ej: factura-venta">
+                </div>
+                <div class="form-group" style="margin-top: 1rem;">
+                    <label class="field-label">Nombre Visible</label>
+                    <input type="text" id="new-doc-name" class="prompt-input" placeholder="ej: Factura de Venta">
+                </div>
+                <div class="form-group" style="margin-top: 1rem;">
+                    <label class="field-label">Descripción</label>
+                    <input type="text" id="new-doc-desc" class="prompt-input" placeholder="Breve descripción...">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" id="cancel-add-modal-btn">Cancelar</button>
+                <button class="btn btn-primary" id="confirm-add-doctype-btn">Crear Tipo</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Processing Overlay -->
+    <div id="processing-overlay" class="overlay hidden">
+        <div class="processing-card"
+            style="background: white; padding: 2rem; border-radius: 12px; width: 400px; box-shadow: 0 4px 20px rgba(0,0,0,0.15);">
+            <h3 style="margin-bottom: 1.5rem; text-align: center; color: var(--primary-color);">Procesando Documento
+            </h3>
+            <ul class="processing-steps" style="list-style: none; padding: 0;">
+                <li id="step-ingest" class="step-item pending">
+                    <span class="step-icon">⚪</span> <span class="step-text">Digitalizando y optimizando</span>
+                </li>
+                <li id="step-ocr" class="step-item pending">
+                    <span class="step-icon">⚪</span> <span class="step-text">Extracción de Texto (OCR)</span>
+                </li>
+                <li id="step-classify" class="step-item pending">
+                    <span class="step-icon">⚪</span> <span class="step-text">Clasificación de Documento</span>
+                </li>
+                <li id="step-extract" class="step-item pending">
+                    <span class="step-icon">⚪</span> <span class="step-text">Extracción de Entidades</span>
+                </li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Success Modal -->
+    <div id="success-modal" class="overlay hidden">
+        <div class="modal-card" style="text-align: center; max-width: 400px;">
+            <div style="margin-bottom: 1rem;">
+                <div
+                    style="background: var(--success-color); width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto;">
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="20 6 9 17 4 12"></polyline>
+                    </svg>
+                </div>
+            </div>
+            <h3 style="color: var(--primary-color); margin-bottom: 0.5rem;">¡Documento Almacenado!</h3>
+            <p style="color: var(--text-color); margin-bottom: 1.5rem; font-size: 1.1rem;">
+                Enviado exitosamente a <br><strong>AZ-Digital Cloud</strong>
+            </p>
+            <button class="btn btn-primary" id="success-close-btn" style="width: 100%;">Continuar</button>
+        </div>
+    </div>
+    <li id="step-classify" class="step-item pending">
+        <span class="step-icon">⚪</span> <span class="step-text">Clasificación de Documento</span>
+    </li>
+    <li id="step-extract" class="step-item pending">
+        <span class="step-icon">⚪</span> <span class="step-text">Extracción de Entidades</span>
+    </li>
+    </ul>
+    </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+
+</html>
