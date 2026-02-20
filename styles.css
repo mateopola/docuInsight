@@ -1,9 +1,9 @@
 :root {
-    --primary-color: #3b9326;
-    /* Banco Falabella Green */
-    --primary-dark: #2e751d;
-    --secondary-color: #FFFF00;
-    /* Accents */
+    --primary-color: #005f9f;
+    /* SinergIA Lab Blue */
+    --primary-dark: #004c7f;
+    --secondary-color: #f0f4f8;
+    /* Neutral Light Blue/Gray */
     --text-color: #333333;
     --text-light: #666666;
     --bg-color: #f4f7f6;
@@ -82,10 +82,10 @@ body {
 }
 
 .brand-logo {
-    max-height: 40px;
-    /* STRICT LIMIT */
-    max-width: 140px;
-    /* Prevent it from pushing toggle off */
+    max-height: 80px;
+    /* Increased size */
+    max-width: 180px;
+    /* Allow more width */
     width: auto;
     object-fit: contain;
     display: block;
@@ -144,7 +144,7 @@ body {
     transform: rotate(180deg);
     background: transparent;
 }
-}
+
 
 .sidebar.collapsed .brand-logo {
     display: none;
