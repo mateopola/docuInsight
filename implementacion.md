@@ -451,13 +451,11 @@ Dashboard claro de resultados
 
 Resultado Esperado
 
-Estilo banco falabella (colores y logo)
 
-Buscar en internet para colores: https://www.bancofalabella.com.co/
 
 Quiero que haya un side bar a la izquierda donde este el menu
 
-Logo: C:\Users\mateo\Desktop\DocuInsight\Logotipo_Banco_Falabella.svg.png
+Logo: C:\Users\mateo\Desktop\DocuInsight\logo SinergIA Lab.png
 
 Una aplicación que demuestre cómo una organización puede:
 

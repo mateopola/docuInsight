@@ -64,29 +64,34 @@ body {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 0 1rem;
-    height: 70px;
+    padding: 1rem 0;
+    /* Vertical padding */
+    height: auto;
+    /* Let content dictate height */
+    min-height: 80px;
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
     margin-bottom: 1rem;
     position: relative;
-    /* transition: all 0.3s ease; - Removed to prevent jitter */
 }
 
 .brand-content {
     display: flex;
     align-items: center;
-    justify-content: flex-start;
+    justify-content: center;
+    /* Center logo */
     flex: 1;
-    overflow: hidden;
-    height: 100%;
+    overflow: visible;
+    /* Allow expansion */
+    height: auto;
 }
 
 .brand-logo {
-    max-height: 80px;
-    /* Increased size */
-    max-width: 180px;
-    /* Allow more width */
-    width: auto;
+    max-height: 120px;
+    /* Much larger limit */
+    width: 100%;
+    /* Fill available width */
+    max-width: 200px;
+    /* Constrain slightly so it doesn't hit toggle */
     object-fit: contain;
     display: block;
 }
