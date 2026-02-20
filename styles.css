@@ -31,11 +31,14 @@ body {
     color: var(--text-color);
     height: 100vh;
     overflow: hidden;
+    /* Keep hidden on body to prevent double scrollbars */
 }
 
 .app-container {
     display: flex;
     height: 100vh;
+    width: 100vw;
+    overflow: hidden;
 }
 
 /* Sidebar */
@@ -47,51 +50,65 @@ body {
     flex-direction: column;
     padding: 1.5rem;
     box-shadow: var(--shadow-sm);
-    z-index: 10;
+    z-index: 100;
+    /* High z-index to stay on top */
     color: white;
     transition: width 0.3s ease;
+    flex-shrink: 0;
+    /* Prevent shrinking */
+}
+
+/* Main Content Area */
+.main-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
     overflow: hidden;
-    /* Hide content when shrinking */
+    position: relative;
+    background-color: var(--bg-color);
+    z-index: 1;
 }
 
-.sidebar.collapsed {
-    width: 80px;
-    padding: 1.5rem 0.75rem;
+#content-area {
+    flex: 1;
+    overflow-y: auto;
+    /* Enable vertical scrolling for content */
+    padding: 2rem;
+    position: relative;
 }
 
-/* Brand Section - Unified & Robust */
+/* Brand Section */
 .brand {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 1rem 0;
-    /* Vertical padding */
+    padding: 1rem;
     height: auto;
-    /* Let content dictate height */
     min-height: 80px;
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
     margin-bottom: 1rem;
-    position: relative;
+    background: rgba(255, 255, 255, 0.05);
 }
 
 .brand-content {
     display: flex;
     align-items: center;
     justify-content: center;
-    /* Center logo */
     flex: 1;
-    overflow: visible;
-    /* Allow expansion */
+    overflow: hidden;
     height: auto;
+    background: rgba(255, 255, 255, 0.95);
+    padding: 8px;
+    border-radius: 8px;
+    margin-right: 10px;
+    transition: all 0.3s ease;
 }
 
 .brand-logo {
-    max-height: 120px;
-    /* Much larger limit */
-    width: 100%;
-    /* Fill available width */
-    max-width: 200px;
-    /* Constrain slightly so it doesn't hit toggle */
+    max-height: 50px;
+    width: auto;
+    max-width: 100%;
     object-fit: contain;
     display: block;
 }
@@ -109,57 +126,58 @@ body {
     color: white;
     cursor: pointer;
     margin-left: 0.5rem;
+    padding: 0;
 }
 
 .sidebar-toggle-btn:hover {
     background: rgba(255, 255, 255, 0.2);
+    color: white;
 }
 
-/* Collapsed State */
+/* Collapsed Sidebar State */
+.sidebar.collapsed {
+    width: 80px;
+    padding: 1.5rem 0.5rem;
+}
+
 .sidebar.collapsed .brand {
-    justify-content: center;
-    padding: 0;
     flex-direction: column;
-    gap: 10px;
-    height: auto;
-    padding-bottom: 1rem;
+    padding: 0.5rem;
+    gap: 1rem;
+    min-height: auto;
 }
 
 .sidebar.collapsed .brand-content {
-    justify-content: center;
-    width: 100%;
-    flex: none;
-    /* Don't expand */
-    height: auto;
-}
-
-.sidebar.collapsed .brand-logo {
-    max-width: 50px;
-    /* Small icon size */
-    max-height: 50px;
-    margin: 0 auto;
-}
-
-.sidebar.collapsed .brand-name {
-    display: none !important;
-}
-
-.sidebar.collapsed .sidebar-toggle-btn {
-    margin-left: 0;
-    transform: rotate(180deg);
     background: transparent;
+    padding: 0;
+    margin-right: 0;
+    box-shadow: none;
 }
 
-
 .sidebar.collapsed .brand-logo {
+    max-height: 40px;
+    opacity: 0.9;
+}
+
+.sidebar.collapsed .nav-text {
     display: none;
 }
 
-/* User might want logo invisible if small? Or assume logo IS icon? */
-/* Assuming Logo IS icon. */
-.sidebar.collapsed .brand-logo {
-    display: block;
-    margin: 0 auto;
+.sidebar.collapsed .nav-item {
+    justify-content: center;
+    padding: 1rem;
+}
+
+.sidebar.collapsed .nav-item .icon {
+    margin-right: 0;
+}
+
+.sidebar.collapsed .user-profile {
+    justify-content: center;
+}
+
+.sidebar.collapsed .info {
+    display: none;
 }
 
 
@@ -536,6 +554,26 @@ body {
     transition: all 0.2s ease;
 }
 
+.chart-card {
+    background: white;
+    padding: 1.5rem;
+    border-radius: 12px;
+    box-shadow: var(--shadow-sm);
+    display: flex;
+    flex-direction: column;
+    min-height: 350px;
+    /* Ensure sufficient space for card */
+}
+
+.chart-wrapper {
+    position: relative;
+    flex: 1;
+    min-height: 250px;
+    /* Dedicated height for the chart area */
+    width: 100%;
+    overflow: hidden;
+}
+
 .btn-primary {
     background-color: var(--primary-color);
     color: white;
@@ -699,31 +737,63 @@ body {
 }
 
 /* KPI Dashboard Styles */
-.kpi-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-    gap: 1.5rem;
-    margin-bottom: 2rem;
+/* Filter Buttons */
+.dashboard-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
 }
 
+.date-filter {
+    display: flex;
+    background: white;
+    padding: 4px;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+}
+
+.filter-btn {
+    padding: 6px 16px;
+    border: none;
+    background: transparent;
+    color: var(--text-light);
+    font-weight: 500;
+    font-size: 0.9rem;
+    cursor: pointer;
+    border-radius: 6px;
+    transition: all 0.2s;
+}
+
+.filter-btn.active {
+    background: var(--primary-color);
+    color: white;
+    box-shadow: 0 2px 4px rgba(0, 95, 159, 0.2);
+}
+
+.kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+/* Enhanced KPI Card */
 .kpi-card {
     background: white;
     padding: 1.5rem;
-    border-radius: var(--radius-lg);
+    border-radius: 12px;
     box-shadow: var(--shadow-sm);
-    border: 1px solid var(--border-color);
     display: flex;
     align-items: center;
     gap: 1rem;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: transform 0.2s, box-shadow 0.2s;
     cursor: default;
     position: relative;
     overflow: hidden;
 }
 
 .kpi-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 12px 20px rgba(0, 0, 0, 0.1);
     border-color: var(--primary-color);
 }
 
@@ -933,7 +1003,33 @@ body {
 }
 
 .admin-tab-content.hidden {
+    display: none !important;
+}
+
+/* Enforce View Visibility */
+.view-section {
     display: none;
+    width: 100%;
+    /* Ensure it takes full width */
+}
+
+.view-section.active {
+    display: block !important;
+    animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+.hidden {
+    display: none !important;
 }
 
 /* Training Module */

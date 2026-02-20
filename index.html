@@ -9,6 +9,8 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="chart.js"></script>
+
 </head>
 
 <body>
@@ -17,8 +19,7 @@
         <aside class="sidebar" id="sidebar">
             <div class="brand">
                 <div class="brand-content">
-                    <img src="logo_sinergia_optimized.png" alt="SinergIA Lab" class="brand-logo"
-                        style="max-height: 120px; width: 100%; max-width: 240px; display: block;">
+                    <img src="logo_sinergia_optimized.png" alt="SinergIA Lab" class="brand-logo">
                 </div>
                 <button id="sidebar-toggle" class="sidebar-toggle-btn" title="Alternar menú">
                     <!-- Hamburger / Close Icon (SVG) -->
@@ -103,230 +104,276 @@
 
                 <!-- View: METRICS (KPIs) -->
                 <div id="metrics-view" class="view-section active">
+                    <div class="dashboard-header">
+                        <h2>Centro de Comando - Inteligencia Documental</h2>
+                        <div class="date-filter">
+                            <button class="filter-btn active">Últimos 30 días</button>
+                            <button class="filter-btn">Este Año</button>
+                        </div>
+                    </div>
+
+                    <!-- Top Level APIs -->
                     <div class="kpi-grid">
                         <div class="kpi-card">
-                            <div class="kpi-icon"
-                                style="background:rgba(59, 147, 38, 0.1); color:var(--primary-color);">📑</div>
+                            <div class="kpi-icon" style="background:rgba(0, 95, 159, 0.1); color:var(--primary-color);">
+                                📑</div>
                             <div class="kpi-info">
                                 <span class="kpi-label">Documentos Procesados</span>
                                 <span class="kpi-value" id="kpi-total-docs">1,248</span>
-                                <span class="kpi-trend up">▲ 12% este mes</span>
+                                <span class="kpi-trend up">▲ 12% vs mes anterior</span>
                             </div>
                         </div>
                         <div class="kpi-card">
-                            <div class="kpi-icon" style="background:rgba(33, 150, 243, 0.1); color:#2196F3;">🎯</div>
+                            <div class="kpi-icon" style="background:rgba(76, 175, 80, 0.1); color:#4CAF50;">💰</div>
                             <div class="kpi-info">
-                                <span class="kpi-label">Precisión Promedio</span>
-                                <span class="kpi-value" id="kpi-accuracy">96.5%</span>
-                                <span class="kpi-trend up">▲ 1.2% vs objetivo</span>
+                                <span class="kpi-label">Ahorro Estimado</span>
+                                <span class="kpi-value" id="kpi-savings">$24.5M</span>
+                                <span class="kpi-trend up">▲ Optimización operativa</span>
                             </div>
                         </div>
                         <div class="kpi-card">
-                            <div class="kpi-icon" style="background:rgba(255, 152, 0, 0.1); color:#FF9800;">⏱️</div>
+                            <div class="kpi-icon" style="background:rgba(33, 150, 243, 0.1); color:#2196F3;">🚀</div>
                             <div class="kpi-info">
-                                <span class="kpi-label">Tiempo Promedio</span>
-                                <span class="kpi-value">1.8s</span>
-                                <span class="kpi-trend down">▼ 0.2s optimizado</span>
+                                <span class="kpi-label">Tasa STP (Sin Toque)</span>
+                                <span class="kpi-value" id="kpi-stp">84.2%</span>
+                                <span class="kpi-trend up">▲ 5% mejora continua</span>
                             </div>
                         </div>
                         <div class="kpi-card">
-                            <div class="kpi-icon" style="background:rgba(156, 39, 176, 0.1); color:#9C27B0;">🤖</div>
+                            <div class="kpi-icon" style="background:rgba(255, 152, 0, 0.1); color:#FF9800;">⚡</div>
                             <div class="kpi-info">
-                                <span class="kpi-label">Consumo de Tokens</span>
-                                <span class="kpi-value">845k</span>
-                                <span class="kpi-trend">Tokens acumulados</span>
+                                <span class="kpi-label">Velocidad Promedio</span>
+                                <span class="kpi-value">1.2s</span>
+                                <span class="kpi-trend down">▼ -0.3s por página</span>
                             </div>
                         </div>
                     </div>
 
-                    <div class="charts-grid">
-                        <div class="card chart-card">
-                            <h3>Distribución por Tipología</h3>
-                            <div class="chart-placeholder">
-                                <!-- Simulated Bar Chart -->
-                                <div class="bar-chart">
-                                    <div class="bar-group">
-                                        <div class="bar-label">RUT</div>
-                                        <div class="bar-fill" style="width: 45%;"></div>
-                                        <div class="bar-value">45%</div>
-                                    </div>
-                                    <div class="bar-group">
-                                        <div class="bar-label">Cámaras</div>
-                                        <div class="bar-fill" style="width: 30%;"></div>
-                                        <div class="bar-value">30%</div>
-                                    </div>
-                                    <div class="bar-group">
-                                        <div class="bar-label">Cédulas</div>
-                                        <div class="bar-fill" style="width: 25%;"></div>
-                                        <div class="bar-value">25%</div>
-                                    </div>
-                                </div>
+                    <!-- Charts Section -->
+                    <div class="charts-grid"
+                        style="display: grid; grid-template-columns: 2fr 1fr; gap: 1.5rem; margin-top: 1.5rem;">
+                        <div class="chart-card"
+                            style="background: white; padding: 1.5rem; border-radius: 12px; box-shadow: var(--shadow-sm);">
+                            <h3 style="margin-bottom: 1rem; font-size: 1rem; color: var(--text-light);">Tendencia de
+                                Eficiencia (Humano vs IA)</h3>
+                            <div class="chart-wrapper">
+                                <canvas id="efficiencyChart"></canvas>
                             </div>
                         </div>
-                        <div class="card chart-card">
-                            <h3>Documentos Procesados por Mes</h3>
-                            <div class="chart-placeholder">
-                                <!-- Simulated Vertical Bar Chart (Histogram style) -->
-                                <div class="column-chart">
-                                    <div class="col-group">
-                                        <div class="col-fill" style="height: 40%;" data-tooltip="145 Docs"></div>
-                                        <div class="col-label">Ene</div>
-                                    </div>
-                                    <div class="col-group">
-                                        <div class="col-fill" style="height: 55%;" data-tooltip="198 Docs"></div>
-                                        <div class="col-label">Feb</div>
-                                    </div>
-                                    <div class="col-group">
-                                        <div class="col-fill" style="height: 35%;" data-tooltip="126 Docs"></div>
-                                        <div class="col-label">Mar</div>
-                                    </div>
-                                    <div class="col-group">
-                                        <div class="col-fill" style="height: 70%;" data-tooltip="254 Docs"></div>
-                                        <div class="col-label">Abr</div>
-                                    </div>
-                                    <div class="col-group">
-                                        <div class="col-fill" style="height: 60%;" data-tooltip="210 Docs"></div>
-                                        <div class="col-label">May</div>
-                                    </div>
-                                    <div class="col-group">
-                                        <div class="col-fill" style="height: 85%;" data-tooltip="315 Docs"></div>
-                                        <div class="col-label">Jun</div>
-                                    </div>
-                                </div>
+                        <div class="chart-card"
+                            style="background: white; padding: 1.5rem; border-radius: 12px; box-shadow: var(--shadow-sm);">
+                            <h3 style="margin-bottom: 1rem; font-size: 1rem; color: var(--text-light);">Distribución por
+                                Tipología</h3>
+                            <div class="chart-wrapper">
+                                <canvas id="docTypeChart"></canvas>
                             </div>
                         </div>
                     </div>
+
+                    <div class="charts-grid-secondary"
+                        style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1.5rem; margin-top: 1.5rem;">
+                        <div class="chart-card"
+                            style="background: white; padding: 1.5rem; border-radius: 12px; box-shadow: var(--shadow-sm);">
+                            <h3 style="margin-bottom: 1rem; font-size: 1rem; color: var(--text-light);">Precisión de
+                                Extracción</h3>
+                            <div class="chart-wrapper">
+                                <canvas id="accuracyChart"></canvas>
+                            </div>
+                        </div>
+                        <div class="chart-card"
+                            style="background: white; padding: 1.5rem; border-radius: 12px; box-shadow: var(--shadow-sm);">
+                            <h3 style="margin-bottom: 1rem; font-size: 1rem; color: var(--text-light);">Volumen Diario
+                            </h3>
+                            <div class="chart-wrapper">
+                                <canvas id="volumeChart"></canvas>
+                            </div>
+                        </div>
+                        <div class="chart-card"
+                            style="background: white; padding: 1.5rem; border-radius: 12px; box-shadow: var(--shadow-sm);">
+                            <h3 style="margin-bottom: 1rem; font-size: 1rem; color: var(--text-light);">Retorno de
+                                Inversión (ROI)</h3>
+                            <div
+                                style="height: 200px; display: flex; align-items: center; justify-content: center; flex-direction: column;">
+                                <div style="font-size: 3rem; font-weight: 700; color: var(--primary-color);">420%</div>
+                                <div style="color: var(--success-color); font-weight: 500;">▲ Proyectado Anual</div>
+                                <div style="font-size: 0.85rem; color: #999; margin-top: 1rem; text-align: center;">
+                                    Basado en reducción de<br>horas hombre</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Advanced Analytics Section -->
+                    <h3 style="margin: 2rem 0 1rem; color: var(--primary-color);">Análisis Avanzado de Operaciones</h3>
+                    <div class="charts-grid-secondary"
+                        style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1.5rem;">
+
+                        <!-- 5. SLA Compliance -->
+                        <div class="chart-card"
+                            style="background: white; padding: 1.5rem; border-radius: 12px; box-shadow: var(--shadow-sm);">
+                            <h3 style="margin-bottom: 1rem; font-size: 1rem; color: var(--text-light);">Cumplimiento de
+                                SLA (< 5s)</h3>
+                                    <div class="chart-wrapper" style="position: relative;">
+                                        <canvas id="slaGauge"></canvas>
+                                        <div
+                                            style="position: absolute; bottom: 10%; left: 0; right: 0; text-align: center; font-weight: bold; font-size: 1.5rem; color: #333;">
+                                            98%</div>
+                                    </div>
+                        </div>
+
+                        <!-- 6. Human Retention -->
+                        <div class="chart-card"
+                            style="background: white; padding: 1.5rem; border-radius: 12px; box-shadow: var(--shadow-sm);">
+                            <h3 style="margin-bottom: 1rem; font-size: 1rem; color: var(--text-light);">Automatización
+                                vs Revisión Human</h3>
+                            <div class="chart-wrapper">
+                                <canvas id="humanRetentionChart"></canvas>
+                            </div>
+                        </div>
+
+                        <!-- 7. Error Pareto -->
+                        <div class="chart-card"
+                            style="background: white; padding: 1.5rem; border-radius: 12px; box-shadow: var(--shadow-sm);">
+                            <h3 style="margin-bottom: 1rem; font-size: 1rem; color: var(--text-light);">Top Causas de
+                                Rechazo</h3>
+                            <div class="chart-wrapper">
+                                <canvas id="errorParetoChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+
                 </div>
-
-                <!-- View: UPLOAD -->
-                <div id="upload-view" class="view-section hidden">
-                    <div class="upload-container">
-                        <!-- State 1: Drop Zone -->
-                        <div class="drop-zone" id="drop-zone">
-                            <span class="upload-icon">☁️</span>
-                            <h3>Arrastra y suelta documentos aquí</h3>
-                            <p>Soporta PDF, PNG, JPG (Máx 20MB)</p>
-                            <button class="btn btn-primary" id="select-file-btn">Seleccionar Archivo</button>
-                            <input type="file" id="file-input" hidden accept=".pdf,.png,.jpg,.jpeg">
-                        </div>
-
-                        <!-- State 2: Preview & Confirm -->
-                        <div id="upload-preview-state" class="preview-confirm-container hidden">
-                            <div class="preview-actions-header">
-                                <h3>Vista Previa del Documento</h3>
-                                <div class="action-buttons">
-                                    <button class="btn btn-secondary" id="cancel-upload-btn"
-                                        style="color: var(--danger-color); border-color: var(--danger-color);">Eliminar
-                                        Documento</button>
-                                    <button class="btn btn-primary" id="process-upload-btn">✨ Procesar con IA</button>
-                                </div>
-                            </div>
-                            <div id="intake-preview-frame" class="intake-preview-frame">
-                                <!-- Preview Injected Here -->
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- View: DASHBOARD (Hidden by default) -->
-                <div id="dashboard-view" class="view-section hidden">
-                    <div class="results-grid">
-                        <div class="preview-panel card">
-                            <h3>Documento Original</h3>
-                            <div id="doc-preview-container" class="document-preview-placeholder">
-                                <p>No hay documento seleccionado</p>
-                            </div>
-                        </div>
-                        <div class="extraction-panel card">
-                            <div class="panel-header">
-                                <h3>Datos Extraídos</h3>
-                                <span class="badge" id="doc-type-badge">Sin Clasificar</span>
-                            </div>
-                            <div id="extraction-results" class="results-container">
-                                <p class="empty-state">Procese un documento para ver resultados.</p>
-                            </div>
-                            <div class="confidence-meter">
-                                <span>Confianza del Modelo:</span>
-                                <div class="progress-bar">
-                                    <div class="progress-fill" style="width: 0%"></div>
-                                </div>
-                                <span class="score-text">0%</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- View: ADMIN (Governance) -->
-                <div id="admin-view" class="view-section hidden">
-                    <!-- Panel: Configuration (Main List) -->
-                    <div id="admin-main-panel" class="admin-panel active">
-                        <div class="admin-controls">
-                            <button class="btn btn-primary" id="add-doctype-btn">
-                                + Nuevo Tipo Documental
-                            </button>
-                        </div>
-                        <div class="card">
-                            <table class="data-table">
-                                <thead>
-                                    <tr>
-                                        <th style="width:100px;">ID</th>
-                                        <th>Nombre del Documento</th>
-                                        <th>Descripción</th>
-                                        <th style="width:160px;">Acciones</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="doctypes-table-body">
-                                    <!-- Populated by JS -->
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-
-                    <!-- Panel: Training (Hidden Sub-view) -->
-                    <div id="admin-training-panel" class="admin-panel hidden">
-                        <div class="training-container">
-                            <div class="card training-card">
-                                <div
-                                    style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
-                                    <h3>Entrenar Nuevo Modelo</h3>
-                                    <button class="btn btn-secondary" id="cancel-training-btn">← Volver a la
-                                        Lista</button>
-                                </div>
-                                <p class="text-light">Sube ejemplos para enseñar al sistema a reconocer nuevos
-                                    documentos.</p>
-
-                                <div class="form-group" style="margin: 1.5rem 0;">
-                                    <label class="field-label">Nombre del Nuevo Tipo</label>
-                                    <input type="text" id="train-model-name" class="prompt-input"
-                                        placeholder="Ej: Pagaré, Historia Clínica...">
-                                </div>
-
-                                <div class="drop-zone mini-dropzone" id="train-dropzone">
-                                    <span style="font-size: 2rem;">📂</span>
-                                    <p>Arrastra +50 ejemplos aquí</p>
-                                </div>
-
-                                <div id="training-progress-area" class="hidden">
-                                    <div class="terminal-log" id="training-log">
-                                        > Inicializando entorno de entrenamiento...<br>
-                                    </div>
-                                    <div class="progress-bar">
-                                        <div class="progress-fill" id="training-progress-fill" style="width: 0%"></div>
-                                    </div>
-                                    <p class="text-center helper-text" id="training-status-text">Esperando inicio...</p>
-                                </div>
-
-                                <div style="text-align: right; margin-top: 1.5rem;">
-                                    <button class="btn btn-primary" id="start-training-btn">Iniciar Entrenamiento
-                                        (GPU)</button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
             </div>
-        </main>
+            <!-- End of Metrics View -->
+
+            <!-- View: UPLOAD (Moved Inside Content Area) -->
+            <div id="upload-view" class="view-section" style="display: none;">
+                <div class="upload-container">
+                    <!-- State 1: Drop Zone -->
+                    <div class="drop-zone" id="drop-zone">
+                        <span class="upload-icon">☁️</span>
+                        <h3>Arrastra y suelta documentos aquí</h3>
+                        <p>Soporta PDF, PNG, JPG (Máx 20MB)</p>
+                        <button class="btn btn-primary" id="select-file-btn">Seleccionar Archivo</button>
+                        <input type="file" id="file-input" hidden accept=".pdf,.png,.jpg,.jpeg">
+                    </div>
+
+                    <!-- State 2: Preview & Confirm -->
+                    <div id="upload-preview-state" class="preview-confirm-container hidden">
+                        <div class="preview-actions-header">
+                            <h3>Vista Previa del Documento</h3>
+                            <div class="action-buttons">
+                                <button class="btn btn-secondary" id="cancel-upload-btn"
+                                    style="color: var(--danger-color); border-color: var(--danger-color);">Eliminar
+                                    Documento</button>
+                                <button class="btn btn-primary" id="process-upload-btn">✨ Procesar con IA</button>
+                            </div>
+                        </div>
+                        <div id="intake-preview-frame" class="intake-preview-frame">
+                            <!-- Preview Injected Here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- View: DASHBOARD (Hidden by default) -->
+            <div id="dashboard-view" class="view-section">
+                <div class="results-grid">
+                    <div class="preview-panel card">
+                        <h3>Documento Original</h3>
+                        <div id="doc-preview-container" class="document-preview-placeholder">
+                            <p>No hay documento seleccionado</p>
+                        </div>
+                    </div>
+                    <div class="extraction-panel card">
+                        <div class="panel-header">
+                            <h3>Datos Extraídos</h3>
+                            <span class="badge" id="doc-type-badge">Sin Clasificar</span>
+                        </div>
+                        <div id="extraction-results" class="results-container">
+                            <p class="empty-state">Procese un documento para ver resultados.</p>
+                        </div>
+                        <div class="confidence-meter">
+                            <span>Confianza del Modelo:</span>
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: 0%"></div>
+                            </div>
+                            <span class="score-text">0%</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- View: ADMIN (Governance) -->
+            <div id="admin-view" class="view-section">
+                <!-- Panel: Configuration (Main List) -->
+                <div id="admin-main-panel" class="admin-panel active">
+                    <div class="admin-controls">
+                        <button class="btn btn-primary" id="add-doctype-btn">
+                            + Nuevo Tipo Documental
+                        </button>
+                    </div>
+                    <div class="card">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th style="width:100px;">ID</th>
+                                    <th>Nombre del Documento</th>
+                                    <th>Descripción</th>
+                                    <th style="width:160px;">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody id="doctypes-table-body">
+                                <!-- Populated by JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Panel: Training (Hidden Sub-view) -->
+                <div id="admin-training-panel" class="admin-panel hidden">
+                    <div class="training-container">
+                        <div class="card training-card">
+                            <div
+                                style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
+                                <h3>Entrenar Nuevo Modelo</h3>
+                                <button class="btn btn-secondary" id="cancel-training-btn">← Volver a la
+                                    Lista</button>
+                            </div>
+                            <p class="text-light">Sube ejemplos para enseñar al sistema a reconocer nuevos
+                                documentos.</p>
+
+                            <div class="form-group" style="margin: 1.5rem 0;">
+                                <label class="field-label">Nombre del Nuevo Tipo</label>
+                                <input type="text" id="train-model-name" class="prompt-input"
+                                    placeholder="Ej: Pagaré, Historia Clínica...">
+                            </div>
+
+                            <div class="drop-zone mini-dropzone" id="train-dropzone">
+                                <span style="font-size: 2rem;">📂</span>
+                                <p>Arrastra +50 ejemplos aquí</p>
+                            </div>
+
+                            <div id="training-progress-area" class="hidden">
+                                <div class="terminal-log" id="training-log">
+                                    > Inicializando entorno de entrenamiento...<br>
+                                </div>
+                                <div class="progress-bar">
+                                    <div class="progress-fill" id="training-progress-fill" style="width: 0%"></div>
+                                </div>
+                                <p class="text-center helper-text" id="training-status-text">Esperando inicio...</p>
+                            </div>
+
+                            <div style="text-align: right; margin-top: 1.5rem;">
+                                <button class="btn btn-primary" id="start-training-btn">Iniciar Entrenamiento
+                                    (GPU)</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+    </div>
+    </main>
     </div>
 
     <!-- Configuration Modal -->
@@ -443,6 +490,12 @@
     </div>
 
     <script src="app.js"></script>
+    </div>
+    <!-- End of Admin View -->
+
+    </div> <!-- End of #content-area -->
+    </main> <!-- End of .main-content -->
+    </div> <!-- End of .app-container -->
 </body>
 
 </html>

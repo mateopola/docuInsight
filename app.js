@@ -150,12 +150,8 @@ class App {
         // Navigation
         document.querySelectorAll('.nav-item').forEach(btn => {
             btn.addEventListener('click', (e) => {
-                // If clicking an icon inside the button, get the button
-                const target = e.target.closest('.nav-item');
-                if (target) {
-                    const viewId = target.getAttribute('data-view');
-                    this.switchView(viewId);
-                }
+                const viewId = btn.getAttribute('data-view');
+                this.switchView(viewId);
             });
         });
 
@@ -186,60 +182,282 @@ class App {
 
         // Drag & Drop
         const dropZone = document.getElementById('drop-zone');
-        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
-            dropZone.addEventListener(eventName, preventDefaults, false);
-        });
+        if (dropZone) {
+            ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+                dropZone.addEventListener(eventName, (e) => this.preventDefaults(e), false);
+            });
 
-        function preventDefaults(e) {
-            e.preventDefault();
-            e.stopPropagation();
+            dropZone.addEventListener('dragover', () => dropZone.classList.add('dragover'));
+            dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
+            dropZone.addEventListener('drop', (e) => {
+                dropZone.classList.remove('dragover');
+                if (e.dataTransfer.files.length > 0) this.handleFileUpload(e.dataTransfer.files[0]);
+            });
         }
+    }
 
-        dropZone.addEventListener('dragover', () => dropZone.classList.add('dragover'));
-        dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
-        dropZone.addEventListener('drop', (e) => {
-            dropZone.classList.remove('dragover');
-            if (e.dataTransfer.files.length > 0) this.handleFileUpload(e.dataTransfer.files[0]);
-        });
+    preventDefaults(e) {
+        e.preventDefault();
+        e.stopPropagation();
     }
 
     switchView(viewId) {
-        // Nav State
-        document.querySelectorAll('.nav-item').forEach(btn => {
-            if (btn.getAttribute('data-view') === viewId) btn.classList.add('active');
-            else btn.classList.remove('active');
-        });
+        try {
+            console.log("Switching to view:", viewId);
 
-        // View Visibility
-        document.querySelectorAll('.view-section').forEach(section => {
-            section.classList.toggle('active', section.id === viewId);
-            section.classList.toggle('hidden', section.id !== viewId);
-        });
+            // Nav State
+            document.querySelectorAll('.nav-item').forEach(btn => {
+                if (btn.getAttribute('data-view') === viewId) btn.classList.add('active');
+                else btn.classList.remove('active');
+            });
 
-        // Title
-        const titleMap = {
-            'metrics-view': 'Tablero de Control',
-            'upload-view': 'Intake de Documentos',
-            'dashboard-view': 'Resultados del Análisis Visual',
-            'admin-view': 'Gobierno de Tipologías'
-        };
-        const pageTitle = document.getElementById('page-title');
-        if (pageTitle) pageTitle.innerText = titleMap[viewId];
+            // View Visibility - Direct Style Manipulation for robustness
+            const sections = document.querySelectorAll('.view-section');
+            sections.forEach(section => {
+                if (section.id === viewId) {
+                    section.style.display = 'block';
+                    section.classList.add('active');
 
-        // Specific View logic
-        if (viewId === 'metrics-view') this.renderMetrics();
+                    // Trigger chart resize if needed
+                    if (viewId === 'metrics-view' && this.charts) {
+                        setTimeout(() => {
+                            Object.values(this.charts).forEach(c => c && typeof c.resize === 'function' && c.resize());
+                        }, 50);
+                    }
+                } else {
+                    section.style.display = 'none';
+                    section.classList.remove('active');
+                }
+            });
+
+            // Title
+            const titleMap = {
+                'metrics-view': 'Tablero de Control',
+                'upload-view': 'Intake de Documentos',
+                'dashboard-view': 'Resultados del Análisis Visual',
+                'admin-view': 'Gobierno de Tipologías'
+            };
+            const pageTitle = document.getElementById('page-title');
+            if (pageTitle) pageTitle.innerText = titleMap[viewId] || 'DocuInsight';
+
+            // Specific View logic
+            if (viewId === 'metrics-view') this.renderMetrics();
+
+        } catch (error) {
+            console.error("Error switching view:", error);
+        }
     }
 
     renderMetrics() {
-        // Randomize KPI slightly for liveness
-        const totalDocs = 1248 + Math.floor(Math.random() * 5);
-        this.animateValue("kpi-total-docs", 0, totalDocs, 1500);
+        this.initDashboard();
+    }
 
-        // Animate Accuracy
-        this.animateValue("kpi-accuracy", 0, 96, 1500, "%");
+    initDashboard() {
+        if (typeof Chart === 'undefined') {
+            console.error("CRITICAL: Chart is undefined. Script not loaded?");
+            return;
+        }
 
-        // Randomize Token Count
-        // No ID assigned in HTML for tokens yet, but logic is simplified
+        try {
+            // Animate Top Level KPIs
+            this.animateValue("kpi-total-docs", 0, 1248, 2000);
+            this.animateValue("kpi-savings", 0, 24, 2500, ".5M");
+            this.animateValue("kpi-stp", 0, 84, 2000, ".2%");
+
+            // Destroy existing charts
+            if (this.charts) {
+                Object.values(this.charts).forEach(chart => {
+                    if (chart && typeof chart.destroy === 'function') chart.destroy();
+                });
+            }
+            this.charts = {};
+
+            // Helper to safe get context
+            const getCtx = (id) => {
+                const el = document.getElementById(id);
+                if (!el) {
+                    console.error(`ERROR: Element #${id} not found in DOM`);
+                    return null;
+                }
+                const ctx = el.getContext('2d');
+                if (!ctx) console.error(`ERROR: Could not get 2d context for #${id}`);
+                return ctx;
+            };
+
+            // 1. Efficiency Trend
+            const ctxEfficiency = getCtx('efficiencyChart');
+            if (ctxEfficiency) {
+                this.charts.efficiency = new Chart(ctxEfficiency, {
+                    type: 'line',
+                    data: {
+                        labels: ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun'],
+                        datasets: [{
+                            label: 'Tiempo Manual (hrs)',
+                            data: [120, 115, 110, 105, 100, 95],
+                            borderColor: '#ff6384',
+                            tension: 0.4
+                        }, {
+                            label: 'Tiempo IA (hrs)',
+                            data: [20, 18, 15, 12, 10, 8],
+                            borderColor: '#005f9f',
+                            backgroundColor: 'rgba(0, 95, 159, 0.1)',
+                            fill: true,
+                            tension: 0.4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { position: 'bottom' } }
+                    }
+                });
+            }
+
+            // 2. Document Types (Doughnut)
+            const ctxTypes = getCtx('docTypeChart');
+            if (ctxTypes) {
+                this.charts.types = new Chart(ctxTypes, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['RUT', 'Cédulas', 'Cámaras', 'Facturas', 'Otros'],
+                        datasets: [{
+                            data: [35, 25, 20, 15, 5],
+                            backgroundColor: [
+                                '#005f9f', // Primary
+                                '#2196F3',
+                                '#4CAF50',
+                                '#FF9800',
+                                '#9C27B0'
+                            ]
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { position: 'bottom' }
+                        }
+                    }
+                });
+            }
+
+            // 3. Accuracy Bar Chart
+            const ctxAccuracy = getCtx('accuracyChart');
+            if (ctxAccuracy) {
+                this.charts.accuracy = new Chart(ctxAccuracy, {
+                    type: 'bar',
+                    data: {
+                        labels: ['RUT', 'CC', 'Cam', 'Fact'],
+                        datasets: [{
+                            label: 'Precisión %',
+                            data: [98.5, 99.2, 95.0, 92.4],
+                            backgroundColor: '#4CAF50',
+                            borderRadius: 4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            y: { beginAtZero: false, min: 80 }
+                        },
+                        plugins: { legend: { display: false } }
+                    }
+                });
+            }
+
+            // 4. Volume Chart
+            const ctxVolume = getCtx('volumeChart');
+            if (ctxVolume) {
+                this.charts.volume = new Chart(ctxVolume, {
+                    type: 'bar',
+                    data: {
+                        labels: ['Lun', 'Mar', 'Mie', 'Jue', 'Vie'],
+                        datasets: [{
+                            label: 'Docs',
+                            data: [145, 230, 180, 205, 160],
+                            backgroundColor: '#005f9f',
+                            borderRadius: 4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { display: false } }
+                    }
+                });
+            }
+            // 5. SLA Compliance Gauge (Doughnut)
+            const ctxSLA = getCtx('slaGauge');
+            if (ctxSLA) {
+                this.charts.sla = new Chart(ctxSLA, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Cumplimiento', 'Brecha'],
+                        datasets: [{
+                            data: [98, 2],
+                            backgroundColor: ['#4CAF50', '#e0e0e0'],
+                            borderWidth: 0
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        circumference: 180,
+                        rotation: -90,
+                        cutout: '75%',
+                        plugins: { legend: { display: false }, tooltip: { enabled: false } }
+                    }
+                });
+            }
+
+            // 6. Human Retention (Pie)
+            const ctxRetention = getCtx('humanRetentionChart');
+            if (ctxRetention) {
+                this.charts.retention = new Chart(ctxRetention, {
+                    type: 'pie',
+                    data: {
+                        labels: ['Automático (STP)', 'Revisión Manual'],
+                        datasets: [{
+                            data: [84.2, 15.8],
+                            backgroundColor: ['#005f9f', '#FF9800'],
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { position: 'bottom' } }
+                    }
+                });
+            }
+
+            // 7. Error Pareto (Horizontal Bar)
+            const ctxPareto = getCtx('errorParetoChart');
+            if (ctxPareto) {
+                this.charts.pareto = new Chart(ctxPareto, {
+                    type: 'bar',
+                    data: {
+                        labels: ['Calidad Imagen', 'Firma Faltante', 'Doc Incompleto', 'Formato Inválido', 'Otros'],
+                        datasets: [{
+                            label: 'Rechazos',
+                            data: [142, 89, 54, 32, 12],
+                            backgroundColor: '#ff6384',
+                            borderRadius: 4
+                        }]
+                    },
+                    options: {
+                        indexAxis: 'y',
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { display: false } }
+                    }
+                });
+            }
+
+        } catch (e) {
+            console.error("Dashboard init error:", e);
+        }
     }
 
     animateValue(id, start, end, duration, suffix = '') {
@@ -250,17 +468,22 @@ class App {
         const step = (timestamp) => {
             if (!startTimestamp) startTimestamp = timestamp;
             const progress = Math.min((timestamp - startTimestamp) / duration, 1);
-
-            // Ease out quart
             const easeProgress = 1 - Math.pow(1 - progress, 4);
-
             const current = Math.floor(progress * (end - start) + start);
-            obj.innerText = current.toLocaleString() + suffix;
+
+            // Handle decimal simulation for suffix
+            let display = current;
+            if (suffix.includes('.')) {
+                display = current; // Simplified
+            }
+
+            obj.innerText = display + suffix;
 
             if (progress < 1) {
                 window.requestAnimationFrame(step);
             } else {
-                if (suffix === '%') obj.innerText = end + '.5' + suffix; // Hardcoded decimal for accuracy
+                if (suffix === '.5M') obj.innerText = '$' + end + suffix;
+                else obj.innerText = end + suffix;
             }
         };
         window.requestAnimationFrame(step);
@@ -713,4 +936,16 @@ class App {
     wait(ms) { return new Promise(r => setTimeout(r, ms)); }
 }
 
-document.addEventListener('DOMContentLoaded', () => { window.app = new App(); });
+// Robust Initialization
+const initApp = () => {
+    console.log("🚀 DocuInsight App Initialized!");
+    if (!window.app) {
+        window.app = new App();
+    }
+};
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initApp);
+} else {
+    initApp();
+}
