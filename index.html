@@ -4,14 +4,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DocuInsight - Banco Falabella</title>
-    <link rel="stylesheet" href="styles.css">
+    <title>DocuInsight - SinergIA Lab</title>
+    <link rel="stylesheet" href="styles.css?v=3.1">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <script src="chart.js"></script>
-
-</head>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
+    <script>
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
+    </script>
 
 <body>
     <div class="app-container">
@@ -92,7 +95,7 @@
         <main class="main-content">
             <header class="top-bar">
                 <div class="header-branding">
-                    <span class="app-title-main">DocuInsight</span>
+                    <span class="app-title-main" style="font-weight: 700; letter-spacing: -0.5px;">DocuInsight</span>
                 </div>
                 <div class="system-status">
                     <span class="status-dot online"></span> Sistema Activo
@@ -119,32 +122,32 @@
                                 📑</div>
                             <div class="kpi-info">
                                 <span class="kpi-label">Documentos Procesados</span>
-                                <span class="kpi-value" id="kpi-total-docs">1,248</span>
-                                <span class="kpi-trend up">▲ 12% vs mes anterior</span>
+                                <span class="kpi-value" id="kpi-total-docs">-</span>
+                                <span class="kpi-trend up">Calculando...</span>
                             </div>
                         </div>
                         <div class="kpi-card">
-                            <div class="kpi-icon" style="background:rgba(76, 175, 80, 0.1); color:#4CAF50;">💰</div>
+                            <div class="kpi-icon" style="background:rgba(76, 175, 80, 0.1); color:#4CAF50;">⏳</div>
                             <div class="kpi-info">
-                                <span class="kpi-label">Ahorro Estimado</span>
-                                <span class="kpi-value" id="kpi-savings">$24.5M</span>
-                                <span class="kpi-trend up">▲ Optimización operativa</span>
+                                <span class="kpi-label">Pendientes / Iniciados</span>
+                                <span class="kpi-value" id="kpi-pending-docs">-</span>
+                                <span class="kpi-trend up">Porción de backlog</span>
                             </div>
                         </div>
                         <div class="kpi-card">
                             <div class="kpi-icon" style="background:rgba(33, 150, 243, 0.1); color:#2196F3;">🚀</div>
                             <div class="kpi-info">
-                                <span class="kpi-label">Tasa STP (Sin Toque)</span>
-                                <span class="kpi-value" id="kpi-stp">84.2%</span>
-                                <span class="kpi-trend up">▲ 5% mejora continua</span>
+                                <span class="kpi-label">Precisión de Extracción</span>
+                                <span class="kpi-value" id="kpi-stp">-</span>
+                                <span class="kpi-trend up">Modelo Promedio</span>
                             </div>
                         </div>
                         <div class="kpi-card">
                             <div class="kpi-icon" style="background:rgba(255, 152, 0, 0.1); color:#FF9800;">⚡</div>
                             <div class="kpi-info">
                                 <span class="kpi-label">Velocidad Promedio</span>
-                                <span class="kpi-value">1.2s</span>
-                                <span class="kpi-trend down">▼ -0.3s por página</span>
+                                <span class="kpi-value" id="kpi-speed">-</span>
+                                <span class="kpi-trend down">Dinámico</span>
                             </div>
                         </div>
                     </div>
@@ -245,31 +248,87 @@
             </div>
             <!-- End of Metrics View -->
 
-            <!-- View: UPLOAD (Moved Inside Content Area) -->
+            <!-- View: UPLOAD (Split Layout) -->
             <div id="upload-view" class="view-section" style="display: none;">
-                <div class="upload-container">
-                    <!-- State 1: Drop Zone -->
-                    <div class="drop-zone" id="drop-zone">
-                        <span class="upload-icon">☁️</span>
-                        <h3>Arrastra y suelta documentos aquí</h3>
-                        <p>Soporta PDF, PNG, JPG (Máx 20MB)</p>
-                        <button class="btn btn-primary" id="select-file-btn">Seleccionar Archivo</button>
-                        <input type="file" id="file-input" hidden accept=".pdf,.png,.jpg,.jpeg">
-                    </div>
+                <div class="upload-split-layout" style="display: flex; gap: 2rem; height: 100%;">
 
-                    <!-- State 2: Preview & Confirm -->
-                    <div id="upload-preview-state" class="preview-confirm-container hidden">
-                        <div class="preview-actions-header">
-                            <h3>Vista Previa del Documento</h3>
-                            <div class="action-buttons">
-                                <button class="btn btn-secondary" id="cancel-upload-btn"
-                                    style="color: var(--danger-color); border-color: var(--danger-color);">Eliminar
-                                    Documento</button>
-                                <button class="btn btn-primary" id="process-upload-btn">✨ Procesar con IA</button>
+                    <!-- Left Column: Drop Zone & Global Progress -->
+                    <div class="upload-left-panel" style="flex: 2; display: flex; flex-direction: column; gap: 1rem;">
+                        <div class="drop-zone" id="drop-zone"
+                            style="flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; background: white; border: 2px dashed #a0aec0; border-radius: 16px; padding: 2rem; transition: all 0.3s; position: relative; overflow: hidden; max-width: none;">
+                            <div class="drop-zone-icons"
+                                style="display: flex; flex-direction: column; gap: 1rem; margin-bottom: 2rem; opacity: 0.7;">
+                                <div style="display: flex; gap: 1rem; justify-content: center;">
+                                    <div
+                                        style="font-size: 3rem; background: #e2e8f0; border-radius: 8px; padding: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                                        📄</div>
+                                    <div
+                                        style="font-size: 3rem; background: #e2e8f0; border-radius: 8px; padding: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                                        📝</div>
+                                    <div
+                                        style="font-size: 3rem; background: #cbd5e1; border-radius: 8px; padding: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                                        📁</div>
+                                </div>
+                                <div style="display: flex; gap: 1rem; justify-content: center;">
+                                    <div
+                                        style="font-size: 3rem; background: #e2e8f0; border-radius: 8px; padding: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                                        🖼️</div>
+                                    <div
+                                        style="font-size: 3rem; background: #e2e8f0; border-radius: 8px; padding: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                                        🪪</div>
+                                    <div
+                                        style="font-size: 3rem; background: #cbd5e1; border-radius: 8px; padding: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                                        📂</div>
+                                </div>
+                            </div>
+                            <h3 style="font-weight: 600; color: var(--text-color); margin-bottom: 0.5rem; z-index: 1;">
+                                Drop Zone</h3>
+                            <p style="color: var(--text-light); z-index: 1;">Arrastra tus archivos aquí o haz clic para
+                                seleccionar</p>
+                            <button class="btn btn-secondary" id="select-file-btn"
+                                style="margin-top: 1.5rem; z-index: 1;">Seleccionar Archivos</button>
+                            <input type="file" id="file-input" hidden accept=".pdf,.png,.jpg,.jpeg" multiple>
+                        </div>
+
+                        <!-- Progress Panel (Moved here) -->
+                        <div id="batch-progress-panel" class="batch-progress-panel hidden"
+                            style="background: white; border-radius: 12px; padding: 1.5rem; box-shadow: var(--shadow-sm); border: 1px solid var(--border-color);">
+                            <div class="progress-info"
+                                style="font-size: 0.95rem; font-weight: 600; margin-bottom: 0.8rem; color: var(--text-color);">
+                                <span id="batch-progress-text">Procesando 0 de 0 expedientes...</span>
+                            </div>
+                            <div class="progress-bar"
+                                style="height: 6px; background-color: #e2e8f0; border-radius: 3px; overflow: hidden;">
+                                <div class="progress-fill" id="batch-progress-fill"
+                                    style="height: 100%; background-color: var(--primary-color); width: 0%; transition: width 0.3s ease;">
+                                </div>
                             </div>
                         </div>
-                        <div id="intake-preview-frame" class="intake-preview-frame">
-                            <!-- Preview Injected Here -->
+                    </div>
+
+                    <!-- Right Column: Work Queue -->
+                    <div class="upload-right-panel"
+                        style="flex: 1; min-width: 300px; max-width: 500px; background: white; border-radius: 16px; box-shadow: var(--shadow-sm); border: 1px solid var(--border-color); display: flex; flex-direction: column; overflow: hidden;">
+                        <div class="queue-header"
+                            style="display: flex; justify-content: space-between; align-items: center; padding: 1.2rem 1.5rem; border-bottom: 1px solid var(--border-color);">
+                            <h3 style="margin: 0; font-size: 1.1rem; color: var(--text-color);">Work Queue</h3>
+                            <div class="queue-actions" style="display: flex; gap: 0.5rem;">
+                                <button class="btn btn-secondary" id="cancel-upload-btn"
+                                    style="padding: 0.4rem 0.8rem; font-size: 0.85rem; color: var(--danger-color); border-color: transparent;">Vaciar</button>
+                                <button class="btn btn-primary" id="process-upload-btn"
+                                    style="padding: 0.4rem 1rem; font-size: 0.85rem; border-radius: 20px;">▶
+                                    Procesar</button>
+                            </div>
+                        </div>
+
+                        <div id="batch-queue-list" class="batch-queue-list"
+                            style="flex: 1; overflow-y: auto; padding: 1rem; background: #fafafa; display: flex; flex-direction: column; gap: 0.8rem;">
+                            <!-- Empty State -->
+                            <div class="queue-empty-state" id="queue-empty-state"
+                                style="text-align: center; color: var(--text-light); padding: 3rem 1rem; font-style: italic;">
+                                <p>Selecciona documentos para añadir a la cola</p>
+                            </div>
+                            <!-- Injected via JS -->
                         </div>
                     </div>
                 </div>
@@ -277,27 +336,130 @@
 
             <!-- View: DASHBOARD (Hidden by default) -->
             <div id="dashboard-view" class="view-section">
-                <div class="results-grid">
-                    <div class="preview-panel card">
-                        <h3>Documento Original</h3>
-                        <div id="doc-preview-container" class="document-preview-placeholder">
-                            <p>No hay documento seleccionado</p>
+
+                <!-- State 1: Inbox List (Bandeja de Entrada) -->
+                <div id="dashboard-list-view" class="dashboard-list-container">
+                    <div class="panel-header"
+                        style="margin-bottom: 1.5rem; display: flex; justify-content: space-between; align-items: center;">
+                        <div>
+                            <h2 style="color: var(--primary-color);">Bandeja de Documentos Procesados</h2>
+                            <p style="color: var(--text-light); font-size: 0.9rem;">Seleccione un documento para validar
+                                o extraer datos.</p>
+                        </div>
+                        <div class="list-filters" style="display: flex; gap: 0.8rem; flex-wrap: wrap;">
+                            <input type="text" id="dashboard-search-input" class="prompt-input"
+                                placeholder="Buscar documento..." style="width: 200px;">
+
+                            <!-- Advanced Filters -->
+                            <select id="filter-type-select" class="prompt-input" style="width: 150px; cursor: pointer;">
+                                <option value="">Todos los Tipos</option>
+                                <option value="rut">RUT</option>
+                                <option value="certificado">Certificado</option>
+                                <option value="factura">Factura</option>
+                                <option value="cedula">Cédula</option>
+                            </select>
+
+                            <select id="filter-status-select" class="prompt-input"
+                                style="width: 150px; cursor: pointer;">
+                                <option value="">Todos los Estados</option>
+                                <option value="pendiente">Pendiente IA</option>
+                                <option value="texto extraído">Texto Extraído / Extracción</option>
+                                <option value="revisión manual">Revisión Manual</option>
+                                <option value="completado">Completado</option>
+                            </select>
+
+                            <input type="date" id="filter-date-select" class="prompt-input"
+                                style="width: 150px; cursor: pointer;" title="Filtrar por fecha">
+
+                            <button id="dashboard-clear-filters-btn" class="btn btn-secondary btn-sm"
+                                title="Limpiar Filtros">🧹 Limpiar</button>
                         </div>
                     </div>
-                    <div class="extraction-panel card">
-                        <div class="panel-header">
-                            <h3>Datos Extraídos</h3>
+
+                    <div class="doc-cards-wrapper"
+                        style="padding: 0; background: transparent; box-shadow: none; border: none;">
+                        <div id="processed-docs-list" class="doc-cards-container">
+                            <!-- Populated by JS -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- State 2: Detail Dúplex (Split-Screen) -->
+                <div id="dashboard-detail-view" class="results-grid hidden">
+                    <!-- Left: Original Document -->
+                    <div class="preview-panel card" style="position: relative;">
+                        <div
+                            style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                            <button class="btn btn-secondary" id="back-to-list-btn"
+                                style="padding: 0.25rem 0.5rem; font-size: 0.85rem;">← Volver al Listado</button>
+                            <h3 style="margin: 0; font-size: 1rem;" id="detail-doc-title">Documento Original</h3>
+                        </div>
+
+                        <!-- PDF Controls Overlay -->
+                        <div id="pdf-controls"
+                            style="display: none; position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); background: var(--text-main, rgba(65, 69, 77, 0.9)); padding: 8px 16px; border-radius: 20px; gap: 10px; align-items: center; z-index: 10; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
+                            <button id="pdf-prev-btn"
+                                style="background: none; border: none; color: white; cursor: pointer; font-size: 0.9rem; padding: 4px;">◀
+                                Ant</button>
+                            <span id="pdf-page-num"
+                                style="color: white; font-size: 0.9rem; font-weight: 600; min-width: 40px; text-align: center;">1
+                                / 1</span>
+                            <button id="pdf-next-btn"
+                                style="background: none; border: none; color: white; cursor: pointer; font-size: 0.9rem; padding: 4px;">Sig
+                                ▶</button>
+                            <div style="width: 1px; height: 16px; background: rgba(255,255,255,0.3); margin: 0 5px;">
+                            </div>
+                            <button id="pdf-zoom-out"
+                                style="background: none; border: none; color: white; cursor: pointer; font-size: 1rem; padding: 4px;"
+                                title="Zoom Out">🔍-</button>
+                            <button id="pdf-zoom-in"
+                                style="background: none; border: none; color: white; cursor: pointer; font-size: 1rem; padding: 4px;"
+                                title="Zoom In">🔍+</button>
+                        </div>
+
+                        <div id="doc-preview-container" class="document-preview-placeholder"
+                            style="overflow: auto; height: 60vh; max-height: 600px; display: flex; justify-content: center; align-items: flex-start; background: #e0e0e0; border-radius: 8px;">
+                            <p style="margin-top: 2rem;">No hay documento seleccionado</p>
+                        </div>
+                    </div>
+
+                    <!-- Right: Extracted Data (Validator Form) -->
+                    <div class="extraction-panel card"
+                        style="display: flex; flex-direction: column; overflow: hidden; padding: 0;">
+                        <div class="panel-header"
+                            style="display: flex; justify-content: space-between; align-items:center; padding: 1.5rem 1.5rem 1rem 1.5rem; border-bottom: 1px solid var(--border-color); background: #f8fafc; margin-bottom: 0;">
+                            <div>
+                                <h3 style="margin:0; font-size: 1.1rem;">Extracción y Validación de Datos</h3>
+                                <div class="confidence-meter"
+                                    style="margin-top: 0.5rem; margin-bottom: 0; padding-top: 0; border: none;">
+                                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                        <div class="progress-bar" style="width: 100px; height: 6px; margin: 0;">
+                                            <div class="progress-fill" style="width: 0%"></div>
+                                        </div>
+                                        <span class="score-text"
+                                            style="font-size: 0.8rem; font-weight: 500; color: var(--text-light);">0%
+                                            Confianza</span>
+                                    </div>
+                                </div>
+                            </div>
                             <span class="badge" id="doc-type-badge">Sin Clasificar</span>
                         </div>
-                        <div id="extraction-results" class="results-container">
-                            <p class="empty-state">Procese un documento para ver resultados.</p>
+
+                        <div id="extraction-results" class="results-container form-validator-container"
+                            style="flex: 1; overflow-y: auto; padding: 1.5rem;">
+                            <!-- Inyectado via JS: Inputs dinamicos -->
+                            <div class="empty-state"
+                                style="text-align: center; color: var(--text-light); margin-top: 2rem;">Seleccione un
+                                documento de la bandeja para validar sus datos.</div>
                         </div>
-                        <div class="confidence-meter">
-                            <span>Confianza del Modelo:</span>
-                            <div class="progress-bar">
-                                <div class="progress-fill" style="width: 0%"></div>
-                            </div>
-                            <span class="score-text">0%</span>
+
+                        <!-- Sticky Footer Actions -->
+                        <div class="validator-actions"
+                            style="padding: 1rem 1.5rem; border-top: 1px solid var(--border-color); background: white; display: flex; gap: 1rem;">
+                            <button class="btn btn-primary" id="save-validation-btn"
+                                style="flex: 1; border-radius: 8px;">Guardar y Continuar</button>
+                            <button class="btn btn-secondary" id="discard-validation-btn"
+                                style="flex: 1; background: white; border: 1px solid var(--border-color); color: var(--text-color); border-radius: 8px;">Descartar</button>
                         </div>
                     </div>
                 </div>
@@ -329,89 +491,88 @@
                     </div>
                 </div>
 
-                <!-- Panel: Training (Hidden Sub-view) -->
-                <div id="admin-training-panel" class="admin-panel hidden">
-                    <div class="training-container">
-                        <div class="card training-card">
-                            <div
-                                style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
-                                <h3>Entrenar Nuevo Modelo</h3>
-                                <button class="btn btn-secondary" id="cancel-training-btn">← Volver a la
-                                    Lista</button>
-                            </div>
-                            <p class="text-light">Sube ejemplos para enseñar al sistema a reconocer nuevos
-                                documentos.</p>
-
-                            <div class="form-group" style="margin: 1.5rem 0;">
-                                <label class="field-label">Nombre del Nuevo Tipo</label>
-                                <input type="text" id="train-model-name" class="prompt-input"
-                                    placeholder="Ej: Pagaré, Historia Clínica...">
-                            </div>
-
-                            <div class="drop-zone mini-dropzone" id="train-dropzone">
-                                <span style="font-size: 2rem;">📂</span>
-                                <p>Arrastra +50 ejemplos aquí</p>
-                            </div>
-
-                            <div id="training-progress-area" class="hidden">
-                                <div class="terminal-log" id="training-log">
-                                    > Inicializando entorno de entrenamiento...<br>
-                                </div>
-                                <div class="progress-bar">
-                                    <div class="progress-fill" id="training-progress-fill" style="width: 0%"></div>
-                                </div>
-                                <p class="text-center helper-text" id="training-status-text">Esperando inicio...</p>
-                            </div>
-
-                            <div style="text-align: right; margin-top: 1.5rem;">
-                                <button class="btn btn-primary" id="start-training-btn">Iniciar Entrenamiento
-                                    (GPU)</button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
             </div>
 
     </div>
     </main>
     </div>
 
-    <!-- Configuration Modal -->
+    <!-- Configuration Modal (Terminal/Mac Style) -->
     <div id="config-modal" class="overlay hidden">
-        <div class="modal-card">
-            <div class="modal-header">
-                <h3 id="modal-title">Configurar Documento</h3>
-                <button class="close-btn" id="close-modal-btn">&times;</button>
-            </div>
-            <div class="modal-body">
-                <p class="modal-desc">Selecciona los campos que deseas extraer para este tipo documental.</p>
-
-                <div style="display: flex; gap: 0.5rem; margin-bottom: 1rem;">
-                    <input type="text" id="new-field-input" class="prompt-input"
-                        placeholder="Nombre del campo (ej: Retención)..." style="margin-bottom: 0;">
-                    <button id="add-field-btn" class="btn btn-secondary" style="white-space: nowrap;">+ Agregar</button>
+        <div class="mac-modal-container">
+            <!-- Left Panel (Terminal) -->
+            <div class="mac-terminal-panel">
+                <div class="mac-header">
+                    <div class="mac-dots">
+                        <div class="mac-dot red" id="close-modal-btn"></div>
+                        <div class="mac-dot yellow"></div>
+                        <div class="mac-dot green"></div>
+                    </div>
+                    <div class="mac-header-title">DocuInsight Admin - <span id="modal-title-mac">Documento</span></div>
+                    <div style="width: 50px;"></div> <!-- Spacer -->
                 </div>
+                <div class="mac-body">
+                    <div class="mac-prompt-label">Configuración Semántica</div>
+                    <textarea id="config-system-prompt" class="mac-textarea" rows="8"
+                        placeholder="Extraer responsabilidades fiscales...&#10;Identificar actividad económica...&#10;New Prompt..."></textarea>
 
-                <div class="fields-list" id="modal-fields-list">
-                    <!-- Checkboxes injected via JS -->
-                </div>
-
-                <div class="prompt-section">
-                    <h4>Prompt del Sistema (Edición No-Code)</h4>
-                    <textarea class="prompt-input"
-                        rows="4">Analiza este documento y extrae las entidades seleccionadas arriba. Devuelve formato JSON estricto.</textarea>
+                    <div class="mac-prompt-label" style="margin-top: 1rem;">Esquema de Salida (JSON Schema)</div>
+                    <textarea id="config-metadata-schema" class="mac-textarea" rows="8"
+                        placeholder='{ "tipo": "object", "properties": { ... } }'></textarea>
                 </div>
             </div>
-            <div class="modal-footer">
-                <button class="btn btn-secondary" id="cancel-modal-btn">Cancelar</button>
-                <button class="btn btn-primary" id="save-modal-btn">Guardar Cambios</button>
+
+            <!-- Right Panel (Settings Sidebar) -->
+            <div class="mac-settings-panel">
+                <h4 style="font-size: 0.95rem; margin-bottom: 1rem; color: var(--text-color);">Configuración de
+                    Extracción</h4>
+
+                <div class="mac-toggle-row">
+                    <span>Activar Extracción Automática</span>
+                    <label class="mac-switch"><input type="checkbox" checked><span class="mac-slider"></span></label>
+                </div>
+                <div class="mac-toggle-row">
+                    <span>Usar IA Generativa</span>
+                    <label class="mac-switch"><input type="checkbox" checked><span class="mac-slider"></span></label>
+                </div>
+                <div class="mac-toggle-row">
+                    <span>Validación con BD Externa</span>
+                    <label class="mac-switch"><input type="checkbox"><span class="mac-slider"></span></label>
+                </div>
+                <div class="mac-toggle-row">
+                    <span>Notificar Errores</span>
+                    <label class="mac-switch"><input type="checkbox" checked><span class="mac-slider"></span></label>
+                </div>
+
+                <div class="mac-setting-group" style="margin-top: 1rem;">
+                    <label
+                        style="font-size: 0.8rem; color: var(--text-light); display: flex; justify-content: space-between;">
+                        Umbral de Confianza <span style="color: var(--primary-color);">85%</span>
+                    </label>
+                    <input type="range" min="0" max="100" value="85" class="mac-range"
+                        style="width: 100%; margin-top: 0.5rem;">
+                </div>
+
+                <div class="mac-setting-group"
+                    style="margin-top: 1.5rem; display: flex; flex-direction: column; gap: 0.8rem;">
+                    <textarea class="mac-input-soft" rows="1" readonly id="readonly-doc-type"
+                        placeholder="Tipo Documental..."></textarea>
+                    <input type="text" class="mac-input-soft" placeholder="Regla de Extracción..."
+                        value="Default-Rule-OpenAI">
+                </div>
+
+                <div style="flex: 1;"></div> <!-- Push button to bottom -->
+
+                <button class="btn btn-primary" id="save-modal-btn"
+                    style="width: 100%; margin-top: 1rem; border-radius: 8px; font-weight: 500;">Guardar
+                    Cambios</button>
             </div>
         </div>
     </div>
 
-    <!-- Modal: Add New DocType (New) -->
-    <div id="add-doctype-modal" class="overlay hidden">
-        <div class="modal-card">
+    <!-- Modal: Add New DocType -->
+    <div id="add-doctype-modal" class="overlay hidden" style="z-index: 1000;">
+        <div class="modal-card" style="width: 500px; max-width: 90vw;">
             <div class="modal-header">
                 <h3>Nuevo Tipo Documental</h3>
                 <button class="close-btn" id="close-add-modal-btn">&times;</button>
@@ -419,7 +580,7 @@
             <div class="modal-body">
                 <div class="form-group">
                     <label class="field-label">ID Sistema (Slug)</label>
-                    <input type="text" id="new-doc-id" class="prompt-input" placeholder="ej: factura-venta">
+                    <input type="text" id="new-doctype-id" class="prompt-input" placeholder="ej: factura-venta">
                 </div>
                 <div class="form-group" style="margin-top: 1rem;">
                     <label class="field-label">Nombre Visible</label>
@@ -427,7 +588,7 @@
                 </div>
                 <div class="form-group" style="margin-top: 1rem;">
                     <label class="field-label">Descripción</label>
-                    <input type="text" id="new-doc-desc" class="prompt-input" placeholder="Breve descripción...">
+                    <input type="text" id="new-doctype-desc" class="prompt-input" placeholder="Breve descripción...">
                 </div>
             </div>
             <div class="modal-footer">
@@ -479,23 +640,34 @@
             <button class="btn btn-primary" id="success-close-btn" style="width: 100%;">Continuar</button>
         </div>
     </div>
-    <li id="step-classify" class="step-item pending">
-        <span class="step-icon">⚪</span> <span class="step-text">Clasificación de Documento</span>
-    </li>
-    <li id="step-extract" class="step-item pending">
-        <span class="step-icon">⚪</span> <span class="step-text">Extracción de Entidades</span>
-    </li>
-    </ul>
-    </div>
+
+    <!-- Error/Exception Modal -->
+    <div id="error-modal" class="overlay hidden" style="z-index: 9999;">
+        <div class="modal-card" style="text-align: center; max-width: 450px; border-top: 4px solid var(--error-color);">
+            <div style="margin-bottom: 1rem;">
+                <div
+                    style="background: rgba(244, 67, 54, 0.1); width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto;">
+                    <span style="color: var(--error-color); font-size: 2rem;">⚠️</span>
+                </div>
+            </div>
+            <h3 style="color: var(--primary-color); margin-bottom: 0.5rem;" id="error-modal-title">Hubo un problema</h3>
+            <div
+                style="background: #f9f9f9; padding: 1rem; border-radius: 8px; margin-bottom: 1.5rem; text-align: left; max-height: 150px; overflow-y: auto;">
+                <p style="color: var(--text-color); font-size: 0.9rem; margin: 0; font-family: monospace;"
+                    id="error-modal-detail">
+                    Detalle técnico del error...
+                </p>
+            </div>
+            <button class="btn btn-secondary" onclick="document.getElementById('error-modal').classList.add('hidden')"
+                style="width: 100%;">Cerrar Mensaje</button>
+        </div>
     </div>
 
-    <script src="app.js"></script>
-    </div>
-    <!-- End of Admin View -->
-
-    </div> <!-- End of #content-area -->
-    </main> <!-- End of .main-content -->
     </div> <!-- End of .app-container -->
+
+    <!-- Supabase SDK JS -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="app.js?v=4.7"></script>
 </body>
 
 </html>

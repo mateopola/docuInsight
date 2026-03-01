@@ -149,36 +149,33 @@ Detecta lugar y fecha de expedición.
 ⚠️ No requiere redeploy.
 ⚠️ No requiere entrenamiento.
 
-6. Arquitectura (Simulada – Mock Driven)
+6. Arquitectura E2E (Real - Integración Serverless)
 
-La aplicación funciona mediante un motor cognitivo simulado que representa el comportamiento real de un sistema productivo.
+La aplicación ha migrado de una arquitectura simulada a una integración real end-to-end orientada a microservicios:
 
-Flujo:
-Carga Documento
+Flujo Real:
+1. Carga Documento (UI FrontEnd)
    ↓
-Motor OCR Simulado
+2. Despacho Asíncrono a Webhook
    ↓
-Clasificador Documental (reglas + patrón visual)
+3. n8n Orquestador (Genera ID, Extrae texto con OCR/Gemini)
    ↓
-Resolución de Prompt configurado
+4. Persistencia en Base de Datos (Supabase PostgreSQL)
    ↓
-Motor de Extracción Simulado
+5. Notificación Tiempo Real WebSocket (Suscripción FrontEnd)
    ↓
-Generación de JSON estructurado
-   ↓
-Visualización de resultados
+6. Visualización de Resultados y Dashboard de Métricas con datos en vivo.
 
-7. Diseño Técnico (Sin Integraciones)
+7. Diseño Técnico y Stack
 
-La solución NO consume APIs.
+La solución consume servicios externos para procesamiento y almacenamiento continuo:
 
-Todo se implementa mediante:
+✔ **Frontend:** HTML5, CSS3, Vanilla JS (PDF.js, Chart.js).
+✔ **Backend/Base de Datos:** Supabase (PostgreSQL, Realtime, Auth).
+✔ **Orquestación/Cognitivo:** n8n (Workflows asíncronos) integrando la API de Gemini para la extracción y OCR inteligente.
 
-✔ Parsers locales.
-✔ Reglas heurísticas.
-✔ Plantillas de interpretación.
-✔ Simulación controlada del modelo cognitivo.
-✔ JSONs mock preconfigurados ajustados dinámicamente.
+Servicios de Consulta:
+El frontend ejecuta consultas SQL directas vía el SDK de Supabase para alimentar tanto el flujo operativo (bandeja de entrada) como la capa analítica (dashboard).
 
 8. Experiencia de Usuario
 
@@ -423,19 +420,12 @@ Mostrar:
 ✔ JSON estructurado
 ✔ Nivel de confianza simulado
 
-9. No External Dependencies
+9. Plan de Despliegue y Orquestación Backend (Docker & n8n)
 
-Prohibido:
-
-APIs externas
-
-LLM reales
-
-OCR real
-
-Servicios cloud
-
-Todo debe ser local, configurable y demostrativo.
+Se contempla la posibilidad de encapsular el orquestador (n8n) en un contenedor Docker para despliegues locales, on-premise o cloud de manera ágil:
+- Un entorno orquestado con `docker-compose` para levantar la base de datos de n8n y su worker, conectándose a Supabase remoto.
+- Esto permite un ambiente asilado e idéntico para todos los desarrolladores.
+- Los Dashboards y métricas reaccionan *exclusivamente* a los datos producidos por la interacción n8n <-> Supabase.
 
 10. Diseño UX
 
