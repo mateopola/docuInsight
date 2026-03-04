@@ -197,7 +197,8 @@
                                 Inversión (ROI)</h3>
                             <div
                                 style="height: 200px; display: flex; align-items: center; justify-content: center; flex-direction: column;">
-                                <div style="font-size: 3rem; font-weight: 700; color: var(--primary-color);">420%</div>
+                                <div style="font-size: 3rem; font-weight: 700; color: var(--primary-color);"
+                                    id="roi-value">0%</div>
                                 <div style="color: var(--success-color); font-weight: 500;">▲ Proyectado Anual</div>
                                 <div style="font-size: 0.85rem; color: #999; margin-top: 1rem; text-align: center;">
                                     Basado en reducción de<br>horas hombre</div>
@@ -219,7 +220,8 @@
                                         <canvas id="slaGauge"></canvas>
                                         <div
                                             style="position: absolute; bottom: 10%; left: 0; right: 0; text-align: center; font-weight: bold; font-size: 1.5rem; color: #333;">
-                                            98%</div>
+                                            <span id="sla-gauge-value">0</span>%
+                                        </div>
                                     </div>
                         </div>
 
@@ -340,49 +342,80 @@
                 <!-- State 1: Inbox List (Bandeja de Entrada) -->
                 <div id="dashboard-list-view" class="dashboard-list-container">
                     <div class="panel-header"
-                        style="margin-bottom: 1.5rem; display: flex; justify-content: space-between; align-items: center;">
+                        style="margin-bottom: 0; display: flex; justify-content: space-between; align-items: center;">
                         <div>
-                            <h2 style="color: var(--primary-color);">Bandeja de Documentos Procesados</h2>
-                            <p style="color: var(--text-light); font-size: 0.9rem;">Seleccione un documento para validar
+                            <h2 style="color: var(--primary-color); margin-bottom: 0.2rem;">Bandeja de Documentos</h2>
+                            <p style="color: var(--text-light); font-size: 0.85rem; margin: 0;">Seleccione un documento
+                                para validar
                                 o extraer datos.</p>
                         </div>
-                        <div class="list-filters" style="display: flex; gap: 0.8rem; flex-wrap: wrap;">
-                            <input type="text" id="dashboard-search-input" class="prompt-input"
-                                placeholder="Buscar documento..." style="width: 200px;">
+                    </div>
 
-                            <!-- Advanced Filters -->
-                            <select id="filter-type-select" class="prompt-input" style="width: 150px; cursor: pointer;">
-                                <option value="">Todos los Tipos</option>
+                    <!-- Redesigned Filter Toolbar -->
+                    <div class="filter-toolbar">
+                        <div class="filter-group filter-group--search">
+                            <label><span class="filter-icon">🔍</span> Buscar</label>
+                            <input type="text" id="dashboard-search-input" class="filter-input"
+                                placeholder="Nombre, tipo o estado...">
+                        </div>
+                        <div class="filter-group">
+                            <label><span class="filter-icon">📁</span> Tipo</label>
+                            <select id="filter-type-select" class="filter-input">
+                                <option value="">Todos</option>
                                 <option value="rut">RUT</option>
                                 <option value="certificado">Certificado</option>
                                 <option value="factura">Factura</option>
                                 <option value="cedula">Cédula</option>
                             </select>
-
-                            <select id="filter-status-select" class="prompt-input"
-                                style="width: 150px; cursor: pointer;">
-                                <option value="">Todos los Estados</option>
+                        </div>
+                        <div class="filter-group">
+                            <label><span class="filter-icon">📊</span> Estado</label>
+                            <select id="filter-status-select" class="filter-input">
+                                <option value="">Todos</option>
                                 <option value="pendiente">Pendiente IA</option>
-                                <option value="texto extraído">Texto Extraído / Extracción</option>
+                                <option value="texto extraído">Extracción</option>
                                 <option value="revisión manual">Revisión Manual</option>
                                 <option value="completado">Completado</option>
                             </select>
-
-                            <input type="date" id="filter-date-select" class="prompt-input"
-                                style="width: 150px; cursor: pointer;" title="Filtrar por fecha">
-
-                            <button id="dashboard-clear-filters-btn" class="btn btn-secondary btn-sm"
-                                title="Limpiar Filtros">🧹 Limpiar</button>
+                        </div>
+                        <div class="filter-group">
+                            <label><span class="filter-icon">📅</span> Fecha</label>
+                            <input type="date" id="filter-date-select" class="filter-input" title="Filtrar por fecha">
+                        </div>
+                        <div class="filter-actions">
+                            <button id="dashboard-clear-filters-btn" class="filter-clear-btn"
+                                title="Limpiar todos los filtros">🧹 Limpiar</button>
                         </div>
                     </div>
 
-                    <div class="doc-cards-wrapper"
-                        style="padding: 0; background: transparent; box-shadow: none; border: none;">
-                        <div id="processed-docs-list" class="doc-cards-container">
-                            <!-- Populated by JS -->
+                    <!-- Results Count -->
+                    <div class="results-header">
+                        <div class="results-count">
+                            <span class="count-number" id="docs-count-badge">0</span>
+                            <span>documentos encontrados</span>
                         </div>
+                    </div>
+
+                    <!-- Document Table -->
+                    <div class="docs-table-wrapper">
+                        <table class="docs-table" id="processed-docs-list">
+                            <thead>
+                                <tr>
+                                    <th class="col-archivo">Archivo</th>
+                                    <th class="col-categoria">Categoría</th>
+                                    <th class="col-estado">Estado</th>
+                                    <th class="col-fecha">Fecha</th>
+                                    <th class="col-confianza">Confianza</th>
+                                    <th class="col-accion">Acción</th>
+                                </tr>
+                            </thead>
+                            <tbody id="docs-table-body">
+                                <!-- Populated by JS -->
+                            </tbody>
+                        </table>
                     </div>
                 </div>
+
 
                 <!-- State 2: Detail Dúplex (Split-Screen) -->
                 <div id="dashboard-detail-view" class="results-grid hidden">

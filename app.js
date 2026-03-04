@@ -8,7 +8,7 @@
 
 const SUPABASE_URL = 'https://basvbmjybtuatwfztatk.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_kQW_coS562vdyk91m5tc4Q_E9QTcHUM_eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJhc3ZibWp5YnR1YXR3Znp0YXRrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIyNDk5NzAsImV4cCI6MjA4NzgyNTk3MH0.AfvYYziUj6hBXRocpzljmfuRJQHDdjxZtXZigHYhLZI'; // (Key reconstruida por seguridad visual)
-const N8N_WEBHOOK_URL = 'http://localhost:5678/webhook-test/recibir-documento'; // USANDO ENTORNO TEST PARA DEPURACION
+const N8N_WEBHOOK_URL = 'http://localhost:5678/webhook/recibir-documento'; // PRODUCCIÓN: workflow activo
 
 // Nota de Integración: Debido al formato en que se provee el JWT token pegado a la KEY en la respuesta, lo aislo:
 const CLEAN_SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJhc3ZibWp5YnR1YXR3Znp0YXRrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIyNDk5NzAsImV4cCI6MjA4NzgyNTk3MH0.AfvYYziUj6hBXRocpzljmfuRJQHDdjxZtXZigHYhLZI';
@@ -67,6 +67,7 @@ class App {
     constructor() {
         this.engine = new N8NEngine(); // Ahora usamos el engine real hacia n8n
         this.currentView = 'metrics-view'; // Default to Dashboard
+        this.docViewMode = 'card'; // Default view mode: 'card' or 'list'
 
         // PDF Context State
         this.pdfDoc = null;
@@ -98,8 +99,10 @@ class App {
                 { event: '*', schema: 'public', table: 'trazabilidad_procesos' },
                 (payload) => {
                     console.log('🔄 Notificación Realtime de DB:', payload);
-                    // Refrescar bandeja si estamos en la vista correspondiente
-                    if (this.currentView === 'dashboard-view' || this.currentView === 'metrics-view') {
+                    // Refrescar la vista activa cuando llegan cambios de BD
+                    if (this.currentView === 'metrics-view') {
+                        this.renderMetrics();
+                    } else if (this.currentView === 'dashboard-view') {
                         this.renderDashboardList();
                     }
                 }
@@ -181,6 +184,10 @@ class App {
             if (dateSelect) dateSelect.value = '';
             this.filterDashboardList();
         });
+
+        // View Toggle Buttons
+        this.safeAddListener('view-card-btn', 'click', () => this.toggleDocView('card'));
+        this.safeAddListener('view-list-btn', 'click', () => this.toggleDocView('list'));
 
         // PDF Controls
         this.safeAddListener('pdf-prev-btn', 'click', () => this.onPdfPrevPage());
@@ -324,7 +331,9 @@ class App {
 
             let savings = (completedDocs * 12.5).toFixed(1); // $12.5 saving per processed doc
             let stpRate = totalDocs > 0 ? Math.round((stpDocs / totalDocs) * 100) : 0;
-            let avgSpeed = totalDocs > 0 ? 1.2 : 0; // Avg extraction time simulated locally (n8n is async)
+
+            // Avg speed estimate
+            let avgSpeed = totalDocs > 0 ? 1.2 : 0;
 
             // Animate Top Level KPIs
             this.animateValue("kpi-total-docs", 0, totalDocs, 1000);
@@ -385,20 +394,36 @@ class App {
             uniqueDocs.forEach(d => {
                 const f = (d.fase || '').toUpperCase();
                 let cat = 'Otros';
-                if (d.resultado_ia && d.resultado_ia.categoria) {
-                    cat = d.resultado_ia.categoria.replace(/_/g, ' ');
+                if (d.resultado_ia) {
+                    const ai = d.resultado_ia;
+                    cat = ai.categoria || (ai.output && ai.output.tipo_documental) || d.categoria_detectada || 'Otros';
+                    cat = String(cat).replace(/_/g, ' ');
+                } else if (d.categoria_detectada) {
+                    cat = d.categoria_detectada.replace(/_/g, ' ');
                 }
 
                 if (typeCounts[cat]) typeCounts[cat]++; else typeCounts[cat] = 1;
 
-                // Confidence
-                if (d.resultado_ia && d.resultado_ia.confianza_general) {
-                    let conf = parseFloat(d.resultado_ia.confianza_general);
-                    if (!isNaN(conf)) {
-                        if (!catConfianza[cat]) { catConfianza[cat] = 0; catCounts[cat] = 0; }
-                        catConfianza[cat] += conf;
-                        catCounts[cat]++;
+                // Confidence — try DB column first, then resultado_ia, then auto-calc
+                let conf = null;
+                if (d.confianza_general != null) {
+                    conf = parseFloat(d.confianza_general);
+                } else if (d.resultado_ia) {
+                    const ai = d.resultado_ia;
+                    if (ai.confianza_general) {
+                        conf = parseFloat(ai.confianza_general);
+                    } else if (ai.output && ai.output.confianza_general) {
+                        conf = parseFloat(ai.output.confianza_general);
+                    } else if (ai.output && typeof ai.output === 'object') {
+                        const fields = Object.values(ai.output);
+                        const confs = fields.filter(v => typeof v === 'object' && v !== null && v.confianza).map(v => parseFloat(v.confianza));
+                        if (confs.length > 0) conf = Math.round(confs.reduce((a, b) => a + b, 0) / confs.length);
                     }
+                }
+                if (conf !== null && !isNaN(conf)) {
+                    if (!catConfianza[cat]) { catConfianza[cat] = 0; catCounts[cat] = 0; }
+                    catConfianza[cat] += conf;
+                    catCounts[cat]++;
                 }
 
                 // Volume
@@ -548,6 +573,26 @@ class App {
                         plugins: { legend: { display: false }, tooltip: { enabled: false } }
                     }
                 });
+            }
+
+            // Update SLA gauge label dynamically
+            const slaGaugeLabel = document.getElementById('sla-gauge-value');
+            if (slaGaugeLabel) {
+                let sPctLabel = totalDocs > 0 ? Math.round((slaMeet / totalDocs) * 100) : 0;
+                slaGaugeLabel.innerText = sPctLabel;
+            }
+
+            // Update ROI dynamically
+            const roiEl = document.getElementById('roi-value');
+            if (roiEl) {
+                if (completedDocs > 0) {
+                    const savingsPerDoc = 12.5;
+                    const costPerDoc = 2.97;
+                    const roi = Math.round(((savingsPerDoc - costPerDoc) / costPerDoc) * 100);
+                    roiEl.innerText = roi + '%';
+                } else {
+                    roiEl.innerText = '0%';
+                }
             }
 
             // 6. Human Retention
@@ -728,8 +773,13 @@ class App {
                 if (item.result && item.result.success) {
                     item.status = 'success';
                 } else {
-                    item.status = 'error'; // Podríamos manejar un estado de error
+                    item.status = 'error';
                     console.error("Error procesando:", item.file.name, item.result);
+                    // Mostrar error visual al usuario
+                    this.showErrorModal(
+                        `Error al procesar: ${item.file.name}`,
+                        item.result?.error || 'No se pudo conectar con el servidor de procesamiento (n8n). Verifica que el servicio esté activo en localhost:5678.'
+                    );
                 }
 
                 completedCount++;
@@ -763,13 +813,13 @@ class App {
     }
 
     async renderDashboardList() {
-        const listContainer = document.getElementById('processed-docs-list');
-        if (!listContainer) return;
+        const tbody = document.getElementById('docs-table-body');
+        if (!tbody) return;
 
         // Limpiar y mostrar estado de carga
         document.getElementById('dashboard-list-view').classList.remove('hidden');
         document.getElementById('dashboard-detail-view').classList.add('hidden');
-        listContainer.innerHTML = '<div class="loading-state">Cargando Bandeja de Trabajo desde Base de Datos...</div>';
+        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:2rem; color:var(--text-light);">Cargando Bandeja de Trabajo desde Base de Datos...</td></tr>';
 
         try {
             // LECTURA REAL DESDE SUPABASE 
@@ -783,11 +833,11 @@ class App {
             if (error) throw error;
 
             if (!data || data.length === 0) {
-                listContainer.innerHTML = '<div class="empty-state-card"><div style="font-size: 3rem; margin-bottom: 1rem;">📭</div><h3>Bandeja Vacía</h3><p>No hay documentos en la bóveda o pendientes de procesar.</p></div>';
+                tbody.innerHTML = '<tr><td colspan="6"><div class="docs-table-empty"><div style="font-size: 2.5rem; margin-bottom: 0.5rem;">📭</div><h3>Bandeja Vacía</h3><p>No hay documentos pendientes de procesar.</p></div></td></tr>';
                 return;
             }
 
-            listContainer.innerHTML = '';
+            tbody.innerHTML = '';
 
             // Ya que el backend crea una fila por FASE para el mismo id_caso, 
             // agrupamos para quedarnos con el registro más reciente de cada documento.
@@ -819,7 +869,7 @@ class App {
 
         } catch (err) {
             console.error("Supabase Error:", err);
-            listContainer.innerHTML = `<div class="empty-state-card" style="color:red;"><h3>Falla de Conexión</h3><p>${err.message}</p></div>`;
+            tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding:2rem; color:var(--error-color);"><strong>Falla de Conexión</strong><br>${err.message}</td></tr>`;
         }
     }
 
@@ -838,8 +888,9 @@ class App {
 
             // Reconstruir category logic para búsqueda
             let docType = 'Pendiente IA';
-            if (item.resultado_ia && item.resultado_ia.categoria) {
-                docType = item.resultado_ia.categoria;
+            if (item.resultado_ia) {
+                const ai = item.resultado_ia;
+                docType = ai.categoria || (ai.output && ai.output.tipo_documental) || item.categoria_detectada || 'Pendiente IA';
             } else if (item.categoria_detectada) {
                 docType = item.categoria_detectada;
             }
@@ -869,35 +920,35 @@ class App {
     }
 
     renderDocsArray(docs) {
-        const listContainer = document.getElementById('processed-docs-list');
-        if (!listContainer) return;
+        const tbody = document.getElementById('docs-table-body');
+        if (!tbody) return;
 
-        listContainer.innerHTML = '';
+        tbody.innerHTML = '';
+
+        // Update count badge
+        const countBadge = document.getElementById('docs-count-badge');
+        if (countBadge) countBadge.textContent = docs.length;
 
         if (docs.length === 0) {
-            listContainer.innerHTML = '<div class="empty-state-card"><h3>No hay coincidencias</h3><p>Intenta con otros términos de búsqueda.</p></div>';
+            tbody.innerHTML = `<tr><td colspan="6"><div class="docs-table-empty"><div style="font-size: 2.5rem; margin-bottom: 0.5rem;">📭</div><h3>Sin resultados</h3><p>No hay documentos que coincidan con la búsqueda.</p></div></td></tr>`;
             return;
         }
 
         docs.forEach((item, index) => {
-            const docId = item.id_caso || `Sin_ID_${index}`;
             const filename = item.nombre_archivo || `Documento_Desconocido`;
 
-            // Intentamos extraer la categoría si n8n ya la inyectó
+            // --- Category ---
             let docType = 'Pendiente IA';
-            if (item.resultado_ia && item.resultado_ia.categoria) {
-                docType = item.resultado_ia.categoria;
+            if (item.resultado_ia) {
+                const ai = item.resultado_ia;
+                docType = ai.categoria || (ai.output && ai.output.tipo_documental) || item.categoria_detectada || 'Pendiente IA';
             } else if (item.categoria_detectada) {
                 docType = item.categoria_detectada;
             }
 
-            // Mapear estado visual basado en 'fase' en lugar de 'estado'
+            // --- Status logic ---
             const faseUpper = (item.fase || '').toUpperCase();
-            let statusBadge = `<span class="status-badge" style="background:#555;color:white;">${item.fase || 'INICIADO'}</span>`;
-            let actionBtnHTML = `<button class="btn btn-secondary btn-sm" disabled style="width: 100%;">Procesando en n8n...</button>`;
 
-            // Verificamos de forma agnóstica si ya hay resultados de IA extraídos (objetos/llaves en resultado_ia), 
-            // esto actúa como el "Fallback" por si n8n olvidó cambiar la fase pero sí guardó los datos.
             let hasExtractedData = false;
             let aiResultCheck = item.resultado_ia || item.entidades;
             if (typeof aiResultCheck === 'string') {
@@ -907,114 +958,106 @@ class App {
                 hasExtractedData = true;
             }
 
-            // Fases que requieren acción humana (Texto extraído por IA pero que requiere revisión visual)
+            let statusLabel = item.fase || 'Iniciado';
+            let statusClass = 'status-chip--processing';
+            let actionLabel = 'Procesando...';
+            let actionClass = 'btn-table-action--secondary';
+            let actionDisabled = true;
+
             if (hasExtractedData || faseUpper.includes('REVISIÓN') || faseUpper.includes('MANUAL') || faseUpper.includes('PENDIENTE') || faseUpper.includes('EXTRAÍD') || faseUpper.includes('COMPLETADA') || faseUpper.includes('IA COMPLETADA')) {
-                // Forzar color de estatus si el proceso se trabó pero tenemos datos listos
                 if (faseUpper.includes('RADICADO') || faseUpper.includes('INICIADO')) {
-                    statusBadge = `<span class="badge badge-warning" style="background:var(--warning-color)">Datos Listos (Pendiente IA)</span>`;
+                    statusLabel = 'Datos Listos';
+                    statusClass = 'status-chip--pending';
                 } else {
-                    statusBadge = `<span class="badge badge-warning" style="background:var(--warning-color)">${item.fase}</span>`;
+                    statusClass = 'status-chip--ready';
                 }
-                actionBtnHTML = `<button class="btn btn-primary btn-sm open-detail-btn" data-index="${this.processedDocs.indexOf(item)}" style="width: 100%; white-space: nowrap; box-shadow: 0 2px 4px rgba(243, 112, 33, 0.3);">Validar Datos ✏️</button>`;
-            }
-            // Fases totalmente finalizadas y revisadas
-            else if (faseUpper.includes('ROBOT') || faseUpper.includes('VALIDADO') || faseUpper.includes('COMPLETADO') || faseUpper.includes('FINALIZADO')) {
-                statusBadge = `<span class="badge" style="background:var(--success-color);color:white;">${item.fase}</span>`;
-                actionBtnHTML = `<button class="btn btn-secondary btn-sm open-detail-btn" data-index="${this.processedDocs.indexOf(item)}" style="width: 100%; white-space: nowrap;">Ver Finalizado 👁️</button>`;
-            }
-            // Fallos
-            else if (faseUpper.includes('ERROR') || faseUpper.includes('FALLO')) {
-                statusBadge = `<span class="badge" style="background:var(--error-color);color:white;">Falla de IA</span>`;
-                actionBtnHTML = `<button class="btn btn-secondary btn-sm open-detail-btn" data-index="${this.processedDocs.indexOf(item)}" style="width: 100%;">Ver Error ⚠️</button>`;
-            }
-
-            // Intentamos sacar el score general si existe en el JSON
-            let confidenceHTML = '-';
-            if (item.resultado_ia && item.resultado_ia.confianza_general) {
-                const score = item.resultado_ia.confianza_general;
-                let color = score >= 90 ? 'var(--success-color)' : (score > 70 ? 'var(--warning-color)' : 'var(--error-color)');
-                confidenceHTML = `<span style="color:${color}; font-weight:600;">${score}%</span>`;
+                actionLabel = 'Validar';
+                actionClass = 'btn-table-action--primary';
+                actionDisabled = false;
+            } else if (faseUpper.includes('ROBOT') || faseUpper.includes('VALIDADO') || faseUpper.includes('COMPLETADO') || faseUpper.includes('FINALIZADO')) {
+                statusClass = 'status-chip--done';
+                actionLabel = 'Ver';
+                actionClass = 'btn-table-action--secondary';
+                actionDisabled = false;
+            } else if (faseUpper.includes('ERROR') || faseUpper.includes('FALLO')) {
+                statusLabel = 'Error';
+                statusClass = 'status-chip--error';
+                actionLabel = 'Ver Error';
+                actionClass = 'btn-table-action--error';
+                actionDisabled = false;
             }
 
-            // Extract Metadata if available
-            let metadataHTML = '';
-
-            // Parse it properly if it's a string
-            let aiResult = item.resultado_ia;
-            if (typeof aiResult === 'string') {
-                try { aiResult = JSON.parse(aiResult); } catch (e) { }
-            }
-
-            if (aiResult) {
-                const entities = aiResult.output || aiResult.entidades || aiResult;
-                const displayableKeys = Object.keys(entities).filter(k =>
-                    k !== 'confianza_general' && k !== 'resumen' && k !== 'categoria' && k !== '_id'
-                ).slice(0, 4); // Show max 4 keys on the card to keep it clean
-
-                if (displayableKeys.length > 0) {
-                    metadataHTML = '<div class="doc-card-metadata">';
-                    displayableKeys.forEach(key => {
-                        let val = entities[key];
-                        if (typeof val === 'object' && val !== null) {
-                            val = val.valor || val.value || '...';
-                        }
-                        // Truncate long values
-                        let displayVal = String(val);
-                        if (displayVal.length > 20) displayVal = displayVal.substring(0, 17) + '...';
-
-                        metadataHTML += `
-                            <div class="metadata-pill">
-                                <span class="metadata-pill-label">${key.replace(/_/g, ' ')}</span> 
-                                <span class="metadata-pill-value" title="${String(val).replace(/"/g, '&quot;')}">${displayVal}</span>
-                            </div>
-                        `;
-                    });
-
-                    // Add a "+X more" badge if there are more keys
-                    const totalKeys = Object.keys(entities).filter(k => k !== 'confianza_general' && k !== 'resumen' && k !== 'categoria' && k !== '_id').length;
-                    if (totalKeys > 4) {
-                        metadataHTML += `<div class="metadata-pill metadata-pill-more">+${totalKeys - 4} más</div>`;
-                    }
-
-                    metadataHTML += '</div>';
+            // --- Confidence ---
+            let generalScore = null;
+            if (item.confianza_general != null) {
+                generalScore = parseFloat(item.confianza_general);
+            } else if (item.resultado_ia) {
+                const ai = item.resultado_ia;
+                if (ai.confianza_general) {
+                    generalScore = parseFloat(ai.confianza_general);
+                } else if (ai.output && ai.output.confianza_general) {
+                    generalScore = parseFloat(ai.output.confianza_general);
+                } else if (ai.output && typeof ai.output === 'object') {
+                    const fields = Object.values(ai.output);
+                    const confs = fields.filter(v => typeof v === 'object' && v !== null && v.confianza).map(v => parseFloat(v.confianza));
+                    if (confs.length > 0) generalScore = Math.round(confs.reduce((a, b) => a + b, 0) / confs.length);
                 }
             }
 
-            // If no metadata, show a subtle placeholder so it doesn't look broken
-            if (!metadataHTML) {
-                metadataHTML = `
-                    <div class="doc-card-metadata-empty" style="margin-top: 0.8rem; border-top: 1px dashed var(--border-color); padding-top: 0.8rem; margin-bottom: 0.5rem;">
-                        <span style="color: var(--text-light); font-size: 0.75rem; font-style: italic;">Sin datos extraídos aún...</span>
-                    </div>
-                `;
+            let confBarColor = '#e2e8f0';
+            let confValueHTML = '<span class="confidence-value" style="color: var(--text-light);">-</span>';
+            let confWidth = '0%';
+            if (generalScore !== null && !isNaN(generalScore)) {
+                confBarColor = generalScore >= 90 ? 'var(--success-color)' : (generalScore > 70 ? '#f59e0b' : 'var(--error-color)');
+                confValueHTML = `<span class="confidence-value" style="color: ${confBarColor};">${generalScore}%</span>`;
+                confWidth = `${generalScore}%`;
             }
 
-            const card = document.createElement('div');
-            card.className = 'doc-list-item';
-            card.innerHTML = `
-                <div class="doc-list-icon">📄</div>
-                <div class="doc-list-info">
-                    <h4 class="doc-list-title" title="${filename}">${filename.length > 30 ? filename.substring(0, 27) + '...' : filename}</h4>
-                    <div class="doc-list-meta">
-                        <span>📅 ${item.fecha ? new Date(item.fecha).toLocaleString() : '-'}</span>
-                        <div class="doc-list-badges">
-                            <span class="badge" style="background:#e6eef4; color:var(--primary-dark); border:none;">${docType}</span>
-                            ${statusBadge}
-                        </div>
+            // --- Date ---
+            let dateStr = '-';
+            if (item.fecha) {
+                const d = new Date(item.fecha);
+                dateStr = d.toLocaleDateString('es-CO', { day: 'numeric', month: 'short' });
+            }
+
+            // --- File icon ---
+            let fileIcon = '📄';
+            if (filename.toLowerCase().endsWith('.pdf')) fileIcon = '📕';
+            else if (/\.(png|jpg|jpeg|webp)$/i.test(filename)) fileIcon = '🖼️';
+
+            // --- Truncated filename ---
+            const displayName = filename.length > 28 ? filename.substring(0, 25) + '...' : filename;
+
+            const tr = document.createElement('tr');
+            const dataIdx = this.processedDocs.indexOf(item);
+            tr.innerHTML = `
+                <td>
+                    <div class="file-name-cell">
+                        <div class="file-icon">${fileIcon}</div>
+                        <span class="file-name" title="${filename}">${displayName}</span>
                     </div>
-                    ${metadataHTML}
-                </div>
-                <div class="doc-list-actions">
-                    <div style="display: flex; flex-direction: column; align-items: flex-end; justify-content: center; gap: 0.8rem; min-width: 150px; height: 100%;">
-                        <span style="font-size: 0.8rem; font-weight: 500;">Confianza: ${confidenceHTML}</span>
-                        ${actionBtnHTML}
+                </td>
+                <td><span class="category-chip" title="${docType}">${docType}</span></td>
+                <td><span class="status-chip ${statusClass}"><span class="status-dot"></span>${statusLabel}</span></td>
+                <td><span class="date-cell">${dateStr}</span></td>
+                <td>
+                    <div class="confidence-cell">
+                        <div class="confidence-bar-mini"><div class="confidence-bar-fill" style="width:${confWidth}; background:${confBarColor};"></div></div>
+                        ${confValueHTML}
                     </div>
-                </div>
+                </td>
+                <td>
+                    <button class="btn-table-action ${actionClass} ${!actionDisabled ? 'open-detail-btn' : ''}" 
+                            ${actionDisabled ? 'disabled' : ''} 
+                            ${!actionDisabled ? `data-index="${dataIdx}"` : ''}>
+                        ${actionLabel}
+                    </button>
+                </td>
             `;
-            listContainer.appendChild(card);
+            tbody.appendChild(tr);
         });
 
-        // Attach listeners to Open buttons
+        // Attach listeners to action buttons
         document.querySelectorAll('.open-detail-btn').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 const idx = parseInt(e.target.closest('.open-detail-btn').getAttribute('data-index'));
@@ -1025,6 +1068,8 @@ class App {
             });
         });
     }
+
+
 
     // --- NUEVO VISOR DESDE SUPABASE ---
     openDocumentDetailsFromDB(dbItem) {
@@ -1113,7 +1158,8 @@ class App {
                 if (!finalValue || finalValue === 'null') finalValue = '';
 
                 // Determinar si requiere revisión por baja confianza (menor a 85%) o si el documento total está PENDIENTE
-                const isPerfect = fieldConfidence >= 85 && dbItem.estado !== 'PENDIENTE_REVISION' && dbItem.estado !== 'REVISION_MANUAL';
+                const faseCheck = (dbItem.fase || '').toUpperCase();
+                const isPerfect = fieldConfidence >= 85 && !faseCheck.includes('PENDIENTE') && !faseCheck.includes('MANUAL');
                 const confColor = isPerfect ? 'var(--success-color)' : 'var(--warning-color)';
                 const confTitle = isPerfect ? `Confianza Alta (${fieldConfidence}%)` : `Requiere Revisión (${fieldConfidence}%)`;
 
